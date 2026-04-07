@@ -128,45 +128,44 @@
       Placement<span>Coach</span>
     </div>
 
-    <!-- Tab toggle -->
     <div class="tab-row">
-      <button class="tab" id="tab-login" onclick="switchTab('login')">Login</button>
-      <button class="tab" id="tab-register" onclick="switchTab('register')">Register</button>
+      <button class="tab" id="tab-login">Login</button>
+      <button class="tab" id="tab-register">Register</button>
     </div>
 
     <div id="error-msg" class="error-msg"></div>
 
     <!-- Login form -->
-    <form class="auth-form" id="form-login" onsubmit="handleLogin(event)">
+    <form class="auth-form" id="form-login">
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input class="form-input" type="email" id="login-email" placeholder="you@college.edu" required/>
+        <input class="form-input" type="email" id="login-email" placeholder="you@college.edu" required autocomplete="email"/>
       </div>
       <div class="form-group">
         <label class="form-label">Password</label>
         <div class="password-wrap">
-          <input class="form-input" type="password" id="login-password" placeholder="••••••••" required/>
-          <span class="toggle-pw" onclick="togglePw('login-password', this)">Show</span>
+          <input class="form-input" type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password"/>
+          <span class="toggle-pw" id="toggle-pw-login">Show</span>
         </div>
       </div>
       <button type="submit" class="btn btn-primary" id="btn-login">Login to my account</button>
     </form>
 
     <!-- Register form -->
-    <form class="auth-form" id="form-register" onsubmit="handleRegister(event)" style="display:none">
+    <form class="auth-form" id="form-register" style="display:none">
       <div class="form-group">
         <label class="form-label">Full name</label>
-        <input class="form-input" type="text" id="reg-name" placeholder="Rahul Sharma"/>
+        <input class="form-input" type="text" id="reg-name" placeholder="Rahul Sharma" autocomplete="name"/>
       </div>
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input class="form-input" type="email" id="reg-email" placeholder="you@college.edu" required/>
+        <input class="form-input" type="email" id="reg-email" placeholder="you@college.edu" required autocomplete="email"/>
       </div>
       <div class="form-group">
         <label class="form-label">Password</label>
         <div class="password-wrap">
-          <input class="form-input" type="password" id="reg-password" placeholder="Min 8 characters" required minlength="8"/>
-          <span class="toggle-pw" onclick="togglePw('reg-password', this)">Show</span>
+          <input class="form-input" type="password" id="reg-password" placeholder="Min 8 characters" required minlength="8" autocomplete="new-password"/>
+          <span class="toggle-pw" id="toggle-pw-reg">Show</span>
         </div>
       </div>
       <button type="submit" class="btn btn-primary" id="btn-register">Create free account</button>
@@ -185,25 +184,32 @@
   // Redirect if already logged in
   if (isLoggedIn()) window.location.href = '/onboard.html';
 
-  // Tab from URL param
-  const tab = new URLSearchParams(location.search).get('tab') || 'login';
-  switchTab(tab);
-
-  window.switchTab = (t) => {
+  // ── Tab switching ───────────────────────────────────────
+  function switchTab(t) {
     ['login','register'].forEach(id => {
       document.getElementById(`tab-${id}`).classList.toggle('active', id === t);
       document.getElementById(`form-${id}`).style.display = id === t ? 'flex' : 'none';
     });
     document.getElementById('error-msg').style.display = 'none';
-  };
+  }
+  document.getElementById('tab-login').addEventListener('click', () => switchTab('login'));
+  document.getElementById('tab-register').addEventListener('click', () => switchTab('register'));
 
-  window.togglePw = (id, el) => {
-    const inp = document.getElementById(id);
+  // Tab from URL param
+  const tab = new URLSearchParams(location.search).get('tab') || 'login';
+  switchTab(tab);
+
+  // ── Password toggle ─────────────────────────────────────
+  function togglePw(inputId, btn) {
+    const inp = document.getElementById(inputId);
     const isText = inp.type === 'text';
     inp.type = isText ? 'password' : 'text';
-    el.textContent = isText ? 'Show' : 'Hide';
-  };
+    btn.textContent = isText ? 'Show' : 'Hide';
+  }
+  document.getElementById('toggle-pw-login').addEventListener('click', function() { togglePw('login-password', this); });
+  document.getElementById('toggle-pw-reg').addEventListener('click', function() { togglePw('reg-password', this); });
 
+  // ── Error & loading helpers ─────────────────────────────
   function setErr(msg) {
     const el = document.getElementById('error-msg');
     el.textContent = msg;
@@ -216,7 +222,8 @@
     else { btn.disabled = false; btn.innerHTML = id === 'btn-login' ? 'Login to my account' : 'Create free account'; }
   }
 
-  window.handleLogin = async (e) => {
+  // ── Login form ──────────────────────────────────────────
+  document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
     document.getElementById('error-msg').style.display = 'none';
     setBtnLoading('btn-login', true);
@@ -233,9 +240,10 @@
     } finally {
       setBtnLoading('btn-login', false);
     }
-  };
+  });
 
-  window.handleRegister = async (e) => {
+  // ── Register form ───────────────────────────────────────
+  document.getElementById('form-register').addEventListener('submit', async (e) => {
     e.preventDefault();
     document.getElementById('error-msg').style.display = 'none';
     setBtnLoading('btn-register', true);
@@ -253,7 +261,7 @@
     } finally {
       setBtnLoading('btn-register', false);
     }
-  };
+  });
 </script>
 </body>
 </html>
