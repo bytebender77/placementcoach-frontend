@@ -1,9 +1,10 @@
 {
+  "outputDirectory": "src",
   "rewrites": [
-    { "source": "/", "destination": "/src/index.html" },
-    { "source": "/login", "destination": "/src/login.html" },
-    { "source": "/onboard", "destination": "/src/onboard.html" },
-    { "source": "/dashboard", "destination": "/src/dashboard.html" }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/onboard", "destination": "/onboard.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" }
   ],
   "headers": [
     {
