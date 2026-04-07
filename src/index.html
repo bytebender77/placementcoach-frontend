@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PlacementCoach — AI Placement Guidance for Indian Students</title>
+  <link rel="stylesheet" href="/src/css/styles.css"/>
+  <style>
+    /* ── Hero ─────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      padding: 100px 24px 60px;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232,255,90,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(255,107,53,0.05) 0%, transparent 50%);
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 100%);
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 760px; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(232,255,90,0.08);
+      border: 1px solid rgba(232,255,90,0.2);
+      border-radius: 2px;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeIn 0.6s ease both;
+    }
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      animation: fadeIn 0.6s 0.1s ease both;
+    }
+    .hero-title em {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .hero-sub {
+      font-size: 14px;
+      color: var(--text-2);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.8;
+      animation: fadeIn 0.6s 0.2s ease both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeIn 0.6s 0.3s ease both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 72px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+      animation: fadeIn 0.6s 0.4s ease both;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+    .stat-label { font-size: 11px; color: var(--text-3); margin-top: 4px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* ── Features ─────────────────────────────────────────── */
+    .features { padding: 100px 24px; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--font-head);
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .section-sub { color: var(--text-2); max-width: 500px; font-size: 13px; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .feature-card:hover { border-color: var(--border-hi); transform: translateY(-2px); }
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+    }
+    .feature-title {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-desc { color: var(--text-2); font-size: 13px; line-height: 1.7; }
+
+    /* ── How it works ─────────────────────────────────────── */
+    .how { padding: 80px 24px; background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px;
+      margin-top: 48px;
+      position: relative;
+    }
+    .how-step { text-align: center; }
+    .how-num {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(232,255,90,0.08);
+      border: 1.5px solid rgba(232,255,90,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 0 auto 16px;
+    }
+    .how-title { font-family: var(--font-head); font-weight: 700; margin-bottom: 6px; font-size: 14px; }
+    .how-desc  { font-size: 12px; color: var(--text-2); line-height: 1.7; }
+
+    /* ── CTA banner ───────────────────────────────────────── */
+    .cta-banner {
+      padding: 100px 24px;
+      text-align: center;
+    }
+    .cta-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .cta-inner .hero-title { font-size: clamp(1.8rem, 4vw, 3rem); }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      padding: 32px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-3);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    @media(max-width:640px) {
+      .hero-stats { gap: 24px; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+      <rect width="22" height="22" rx="4" fill="var(--accent)"/>
+      <path d="M6 16L11 6L16 16" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 13h6" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    Placement<span>Coach</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="/src/login.html" class="btn btn-ghost" style="padding:8px 18px;font-size:12px;">Login</a>
+    <a href="/src/login.html?tab=register" class="btn btn-primary" style="padding:8px 18px;font-size:12px;">Get started free</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span class="dot"></span> AI-Powered · India-Specific · Free</div>
+    <h1 class="hero-title">
+      Stop guessing.<br>
+      Start <em>getting placed.</em>
+    </h1>
+    <p class="hero-sub">
+      Upload your resume. Get your placement probability, ATS score, and a
+      personalised 6-week roadmap built for Indian campus placements.
+    </p>
+    <div class="hero-cta">
+      <a href="/src/login.html?tab=register" class="btn btn-primary btn-lg">
+        Analyse my resume free →
+      </a>
+      <a href="#how" class="btn btn-ghost btn-lg">See how it works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">94%</div>
+        <div class="stat-label">ATS accuracy</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">&lt;60s</div>
+        <div class="stat-label">Full analysis time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Tier 2/3</div>
+        <div class="stat-label">Colleges supported</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Free</div>
+        <div class="stat-label">Forever for students</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">What you get</div>
+    <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+    <p class="section-sub">Built specifically for Indian college students. No generic advice. Real, actionable feedback.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Placement Probability</div>
+        <div class="feature-desc">Get a realistic % range based on your CGPA, skills, college tier, and target companies — not a random number.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <div class="feature-title">ATS Resume Score</div>
+        <div class="feature-desc">See exactly how your resume performs against Indian company ATS filters. Know what keywords you're missing.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗓️</div>
+        <div class="feature-title">6-Week Action Plan</div>
+        <div class="feature-desc">A personalised week-by-week roadmap — DSA, projects, resume fixes, and mock interviews — based on your gaps.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">India-Specific Advice</div>
+        <div class="feature-desc">Knows GFG, InterviewBit, Unstop, Internshala. Understands Tier 2/3 college realities. No generic US advice.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-label" style="text-align:center">3 steps to clarity</div>
+    <h2 class="section-title" style="text-align:center">How PlacementCoach works</h2>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-title">Enter your profile</div>
+        <div class="how-desc">CGPA, skills, college tier, year, and target companies. Takes 2 minutes.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-title">Upload your resume</div>
+        <div class="how-desc">Drop your PDF. Our AI extracts and analyses every section instantly.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-title">Get your report</div>
+        <div class="how-desc">Placement score, ATS feedback, and a personalised 6-week plan — in under 60 seconds.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-banner">
+  <div class="cta-inner">
+    <div class="section-label" style="text-align:center">Start today</div>
+    <h2 class="hero-title">Your placement<br><em>story starts here.</em></h2>
+    <p class="hero-sub" style="margin-top:16px">Join students getting honest feedback and real plans. Free, always.</p>
+    <a href="/src/login.html?tab=register" class="btn btn-primary btn-lg" style="margin-top:12px">
+      Get your free analysis →
+    </a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="nav-logo" style="font-size:0.95rem;">Placement<span>Coach</span></div>
+  <div>Built for Tier 2/3 India · © 2025</div>
+</footer>
+
+<div id="toast-container"></div>
+</body>
+</html>

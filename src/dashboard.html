@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Results — PlacementCoach</title>
+  <link rel="stylesheet" href="/src/css/styles.css"/>
+  <style>
+    .dash-page { padding: 100px 24px 80px; position: relative; z-index: 1; }
+
+    /* ── Top bar ──────────────────────────────────────────── */
+    .dash-header { margin-bottom: 32px; }
+    .dash-greeting {
+      font-family: var(--font-head);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .dash-sub { color: var(--text-3); font-size: 12px; letter-spacing: 0.04em; }
+    .dash-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+    /* ── Score hero ───────────────────────────────────────── */
+    .score-hero {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .score-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+    .score-hero-info { flex: 1; }
+    .prob-range {
+      font-family: var(--font-head);
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .prob-label { font-size: 11px; color: var(--text-3); margin-bottom: 14px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .reasoning-text {
+      color: var(--text-2);
+      font-size: 12px;
+      line-height: 1.8;
+      max-width: 480px;
+      border-left: 2px solid var(--border-hi);
+      padding-left: 12px;
+      font-style: italic;
+    }
+
+    /* ── Signals ──────────────────────────────────────────── */
+    .signals-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .signal-card { padding: 18px 22px; border-radius: var(--radius); border: 1px solid; }
+    .signal-card.positive { background: rgba(61,220,132,0.04); border-color: rgba(61,220,132,0.15); }
+    .signal-card.negative { background: rgba(255,69,69,0.04); border-color: rgba(255,69,69,0.15); }
+    .signal-title { font-weight: 700; font-size: 11px; margin-bottom: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .signal-title.pos { color: var(--success); }
+    .signal-title.neg { color: var(--danger); }
+    .signal-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .signal-list li { font-size: 12px; color: var(--text-2); display: flex; gap: 8px; align-items: flex-start; line-height: 1.6; }
+    .signal-list li::before { content: '→'; flex-shrink: 0; margin-top: 1px; font-size: 11px; }
+    .signal-card.positive .signal-list li::before { color: var(--success); }
+    .signal-card.negative .signal-list li::before { color: var(--danger); }
+
+    /* ── ATS section ──────────────────────────────────────── */
+    .ats-section { margin-bottom: 20px; }
+    .section-heading {
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.02em;
+    }
+    .ats-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .ats-top { display: flex; align-items: center; gap: 24px; margin-bottom: 20px; }
+    .ats-meta { flex: 1; }
+    .ats-verdict {
+      font-size: 12px;
+      color: var(--text-2);
+      font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+    .ats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    @media(max-width: 640px) { .ats-grid { grid-template-columns: 1fr; } .signals-row { grid-template-columns: 1fr; } }
+
+    .ats-col-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ats-col-title.green { color: var(--success); }
+    .ats-col-title.red   { color: var(--danger); }
+    .ats-col-title.amber { color: var(--warning); }
+
+    .ats-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-2);
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+    .ats-item .dot {
+      width: 5px; height: 5px;
+      border-radius: 1px;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    /* keyword pills */
+    .kw-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .kw-pill {
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(255,184,77,0.08);
+      border: 1px solid rgba(255,184,77,0.2);
+      color: var(--warning);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Action plan ──────────────────────────────────────── */
+    .plan-section { margin-bottom: 20px; }
+    .priority-skills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .priority-pill {
+      padding: 4px 12px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(232,255,90,0.08);
+      border: 1px solid rgba(232,255,90,0.2);
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .weeks-grid { display: flex; flex-direction: column; gap: 12px; }
+    .week-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .week-card:hover { border-color: var(--border-hi); }
+    .week-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .week-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(232,255,90,0.08);
+      border: 1px solid rgba(232,255,90,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .week-theme {
+      font-weight: 700;
+      font-size: 14px;
+      flex: 1;
+      font-family: var(--font-head);
+    }
+    .week-chevron { color: var(--text-3); font-size: 1rem; transition: transform var(--transition); }
+    .week-card.open .week-chevron { transform: rotate(180deg); }
+    .week-body { display: none; padding: 0 22px 22px; }
+    .week-card.open .week-body { display: block; }
+    .week-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 14px 0 8px;
+    }
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-2);
+      margin-bottom: 8px;
+      line-height: 1.7;
+    }
+    .task-check {
+      width: 16px; height: 16px;
+      border-radius: 2px;
+      border: 1.5px solid var(--border-hi);
+      flex-shrink: 0;
+      margin-top: 2px;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+    }
+    .task-check.done {
+      background: var(--success);
+      border-color: var(--success);
+      color: #0b0c0e;
+    }
+    .resource-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .resource-item span { color: var(--text-2); }
+
+    /* ── Loading skeletons ────────────────────────────────── */
+    .skeleton-block { border-radius: var(--radius-sm); }
+    .loading-wrap { display: flex; flex-direction: column; gap: 14px; }
+
+    /* ── Motivational note ────────────────────────────────── */
+    .motive-note {
+      background: rgba(232,255,90,0.04);
+      border: 1px solid rgba(232,255,90,0.12);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 18px 22px;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text-2);
+      line-height: 1.8;
+      margin-top: 18px;
+    }
+
+    @media(max-width:640px) {
+      .score-hero { flex-direction: column; gap: 20px; }
+      .ats-top { flex-direction: column; }
+      .prob-range { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+      <rect width="22" height="22" rx="4" fill="var(--accent)"/>
+      <path d="M6 16L11 6L16 16" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 13h6" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    Placement<span style="color:var(--accent)">Coach</span>
+  </div>
+  <div class="nav-links">
+    <a href="/src/onboard.html" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Re-analyse</a>
+    <button onclick="logout()" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Logout</button>
+  </div>
+</nav>
+
+<div class="dash-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="dash-header fade-in">
+      <div class="dash-greeting" id="greeting">Your Placement Report</div>
+      <div class="dash-sub" id="dash-date">Loading your results...</div>
+    </div>
+
+    <!-- Main content (shown after load) -->
+    <div id="dashboard-content" style="display:none">
+
+      <!-- Score hero -->
+      <div class="score-hero fade-in-delay-1">
+        <div id="score-ring-wrap"></div>
+        <div class="score-hero-info">
+          <div class="prob-range" id="prob-range">—%</div>
+          <div class="prob-label">Estimated placement probability</div>
+          <span class="badge" id="prob-badge">—</span>
+          <div class="reasoning-text" id="reasoning" style="margin-top:14px"></div>
+        </div>
+      </div>
+
+      <!-- Positive / Risk signals -->
+      <div class="signals-row fade-in-delay-1">
+        <div class="signal-card positive">
+          <div class="signal-title pos">→ Working in your favour</div>
+          <ul class="signal-list" id="positives-list"></ul>
+        </div>
+        <div class="signal-card negative">
+          <div class="signal-title neg">→ Risk factors</div>
+          <ul class="signal-list" id="risks-list"></ul>
+        </div>
+      </div>
+
+      <!-- ATS Analysis -->
+      <div class="ats-section fade-in-delay-2">
+        <div class="section-heading">📄 ATS Resume Analysis</div>
+        <div class="ats-card">
+          <div class="ats-top">
+            <div id="ats-ring-wrap"></div>
+            <div class="ats-meta">
+              <div class="ats-verdict" id="ats-verdict"></div>
+              <div id="ats-missing-wrap">
+                <div style="font-size:10px;font-weight:600;color:var(--warning);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Missing keywords</div>
+                <div class="kw-list" id="missing-keywords"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ats-grid">
+            <div>
+              <div class="ats-col-title green">Strengths</div>
+              <div id="ats-strengths"></div>
+            </div>
+            <div>
+              <div class="ats-col-title red">Weaknesses</div>
+              <div id="ats-weaknesses"></div>
+            </div>
+            <div>
+              <div class="ats-col-title amber">Formatting issues</div>
+              <div id="ats-formatting"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Plan -->
+      <div class="plan-section fade-in-delay-3">
+        <div class="section-heading">🗓️ Your 6-Week Action Plan</div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Focus first on</div>
+          <div class="priority-skills" id="priority-skills"></div>
+        </div>
+
+        <div class="weeks-grid" id="weeks-grid"></div>
+        <div class="motive-note" id="motive-note" style="display:none"></div>
+      </div>
+
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading-state">
+      <div class="loading-wrap">
+        <div class="skeleton skeleton-block" style="height:160px"></div>
+        <div class="skeleton skeleton-block" style="height:90px"></div>
+        <div class="skeleton skeleton-block" style="height:200px"></div>
+        <div class="skeleton skeleton-block" style="height:340px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { api, getUser, removeToken, isLoggedIn } from '/src/js/api.js';
+  import { scoreColor, labelColor, buildScoreRing, showToast } from '/src/js/utils.js';
+
+  if (!isLoggedIn()) { window.location.href = '/src/login.html'; }
+
+  window.logout = () => { removeToken(); window.location.href = '/src/index.html'; };
+
+  const user = getUser();
+  if (user) {
+    const name = user.full_name ? user.full_name.split(' ')[0] : 'there';
+    document.getElementById('greeting').textContent = `Hey ${name}, here's your report 👋`;
+  }
+
+  // ── Load dashboard data ───────────────────────────────
+  async function loadDashboard() {
+    try {
+      const data = await api.getResults();
+
+      if (!data.analysis) {
+        document.getElementById('loading-state').innerHTML = `
+          <div style="text-align:center;padding:80px 0">
+            <div style="font-size:2.4rem;margin-bottom:14px">📭</div>
+            <div style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;margin-bottom:10px">No results yet</div>
+            <div style="color:var(--text-2);margin-bottom:20px;font-size:13px">Complete your profile and upload your resume to get your report.</div>
+            <a href="/src/onboard.html" class="btn btn-primary btn-lg">Start analysis →</a>
+          </div>`;
+        return;
+      }
+
+      renderDashboard(data);
+
+    } catch (err) {
+      showToast('Failed to load results. Please refresh.', 'error');
+    }
+  }
+
+  function renderDashboard(data) {
+    const { analysis: a, plan: p } = data;
+
+    // Date
+    const date = new Date(a.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('dash-date').textContent = `Analysis from ${date}`;
+
+    // Score hero
+    const atsColor  = scoreColor(a.ats_score);
+    const probColor = probToColor(a.placement_low, a.placement_high);
+    document.getElementById('score-ring-wrap').innerHTML = buildScoreRing(
+      Math.round((a.placement_low + a.placement_high) / 2),
+      'probability',
+      probColor,
+    );
+    document.getElementById('prob-range').innerHTML = `<span style="color:${probColor}">${a.placement_low}%–${a.placement_high}%</span>`;
+    document.getElementById('prob-badge').textContent = a.placement_label;
+    document.getElementById('prob-badge').className = `badge badge-${labelColor(a.placement_label)}`;
+    document.getElementById('reasoning').textContent = a.reasoning || '';
+
+    // Signals
+    renderList('positives-list', a.top_positive_signals || [], 'li');
+    renderList('risks-list',     a.top_risk_factors    || [], 'li');
+
+    // ATS
+    document.getElementById('ats-ring-wrap').innerHTML = buildScoreRing(a.ats_score, 'ATS score', atsColor);
+    document.getElementById('ats-verdict').textContent = a.one_line_verdict || '';
+
+    // Missing keywords
+    const kwEl = document.getElementById('missing-keywords');
+    (a.missing_keywords || []).forEach(kw => {
+      const pill = document.createElement('span');
+      pill.className = 'kw-pill';
+      pill.textContent = kw;
+      kwEl.appendChild(pill);
+    });
+
+    renderATSItems('ats-strengths',  a.ats_strengths  || [], 'var(--success)');
+    renderATSItems('ats-weaknesses', a.ats_weaknesses || [], 'var(--danger)');
+    renderATSItems('ats-formatting', a.formatting_issues || [], 'var(--warning)');
+
+    // Plan
+    if (p) {
+      const prioEl = document.getElementById('priority-skills');
+      (p.priority_skills || []).forEach(s => {
+        const pill = document.createElement('span');
+        pill.className = 'priority-pill';
+        pill.textContent = s;
+        prioEl.appendChild(pill);
+      });
+
+      const weeksEl = document.getElementById('weeks-grid');
+      (p.weeks || []).forEach((week, i) => {
+        weeksEl.appendChild(buildWeekCard(week, i));
+      });
+
+      if (p.motivational_note) {
+        const mEl = document.getElementById('motive-note');
+        mEl.textContent = p.motivational_note;
+        mEl.style.display = 'block';
+      }
+    }
+
+    // Show content
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('dashboard-content').style.display = 'block';
+  }
+
+  function probToColor(low, high) {
+    const mid = (low + high) / 2;
+    if (mid >= 65) return 'var(--success)';
+    if (mid >= 40) return 'var(--warning)';
+    return 'var(--danger)';
+  }
+
+  function renderList(id, items, tag) {
+    const el = document.getElementById(id);
+    items.forEach(item => {
+      const li = document.createElement(tag);
+      li.textContent = item;
+      el.appendChild(li);
+    });
+    if (items.length === 0) {
+      const li = document.createElement(tag);
+      li.textContent = 'None identified';
+      li.style.color = 'var(--text-3)';
+      li.style.fontStyle = 'italic';
+      el.appendChild(li);
+    }
+  }
+
+  function renderATSItems(id, items, dotColor) {
+    const el = document.getElementById(id);
+    if (items.length === 0) {
+      el.innerHTML = `<div class="ats-item" style="color:var(--text-3);font-style:italic">None identified</div>`;
+      return;
+    }
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'ats-item';
+      div.innerHTML = `<span class="dot" style="background:${dotColor}"></span><span>${item}</span>`;
+      el.appendChild(div);
+    });
+  }
+
+  function buildWeekCard(week, i) {
+    const card = document.createElement('div');
+    card.className = 'week-card';
+    if (i === 0) card.classList.add('open');
+
+    const tasksHTML = (week.tasks || []).map((t, ti) => `
+      <div class="task-item">
+        <div class="task-check" onclick="toggleTask(this)" title="Mark done">✓</div>
+        <span>${t}</span>
+      </div>`).join('');
+
+    const resourcesHTML = (week.resources || []).map(r => `
+      <div class="resource-item">
+        <span style="color:var(--accent)">→</span>
+        <span>${r}</span>
+      </div>`).join('');
+
+    card.innerHTML = `
+      <div class="week-header" onclick="toggleWeek(this)">
+        <div class="week-num">${week.week}</div>
+        <div class="week-theme">${week.theme}</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-body">
+        <div class="week-section-label">This week's tasks</div>
+        ${tasksHTML}
+        <div class="week-section-label" style="margin-top:14px">Resources</div>
+        ${resourcesHTML}
+      </div>`;
+    return card;
+  }
+
+  window.toggleWeek = (header) => {
+    header.parentElement.classList.toggle('open');
+  };
+
+  window.toggleTask = (el) => {
+    el.classList.toggle('done');
+    el.textContent = el.classList.contains('done') ? '✓' : '';
+    el.nextElementSibling.style.textDecoration = el.classList.contains('done') ? 'line-through' : 'none';
+    el.nextElementSibling.style.color = el.classList.contains('done') ? 'var(--text-3)' : '';
+  };
+
+  loadDashboard();
+</script>
+</body>
+</html>

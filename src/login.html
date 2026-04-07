@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — PlacementCoach</title>
+  <link rel="stylesheet" href="/src/css/styles.css"/>
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      z-index: 1;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(232,255,90,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 80% 30%, rgba(255,107,53,0.03) 0%, transparent 50%);
+    }
+    .auth-box {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      animation: fadeIn 0.4s ease both;
+    }
+    .auth-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+      justify-content: center;
+    }
+    .auth-logo span { color: var(--accent); }
+
+    .tab-row {
+      display: flex;
+      background: var(--bg3);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1;
+      padding: 9px;
+      border-radius: 2px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: all var(--transition);
+      background: transparent;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .tab.active {
+      background: var(--bg2);
+      color: var(--accent);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .auth-form .btn-primary {
+      width: 100%; justify-content: center;
+      padding: 13px;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 11px;
+      color: var(--text-3);
+      letter-spacing: 0.03em;
+    }
+    .auth-footer a { color: var(--accent); }
+
+    .spinner-inline {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(11,12,14,0.3);
+      border-top-color: #0b0c0e;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    .error-msg {
+      background: rgba(255,69,69,0.08);
+      border: 1px solid rgba(255,69,69,0.2);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--danger);
+      display: none;
+    }
+    .password-wrap { position: relative; }
+    .toggle-pw {
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-3);
+      font-size: 11px;
+      transition: color var(--transition);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .toggle-pw:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <rect width="22" height="22" rx="4" fill="var(--accent)"/>
+        <path d="M6 16L11 6L16 16" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 13h6" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Placement<span>Coach</span>
+    </div>
+
+    <!-- Tab toggle -->
+    <div class="tab-row">
+      <button class="tab" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="tab" id="tab-register" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <!-- Login form -->
+    <form class="auth-form" id="form-login" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="login-email" placeholder="you@college.edu" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrap">
+          <input class="form-input" type="password" id="login-password" placeholder="••••••••" required/>
+          <span class="toggle-pw" onclick="togglePw('login-password', this)">Show</span>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="btn-login">Login to my account</button>
+    </form>
+
+    <!-- Register form -->
+    <form class="auth-form" id="form-register" onsubmit="handleRegister(event)" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input class="form-input" type="text" id="reg-name" placeholder="Rahul Sharma"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="reg-email" placeholder="you@college.edu" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrap">
+          <input class="form-input" type="password" id="reg-password" placeholder="Min 8 characters" required minlength="8"/>
+          <span class="toggle-pw" onclick="togglePw('reg-password', this)">Show</span>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="btn-register">Create free account</button>
+    </form>
+
+    <div class="auth-footer">
+      By signing up you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { api, setToken, setUser, isLoggedIn } from '/src/js/api.js';
+  import { showToast } from '/src/js/utils.js';
+
+  // Redirect if already logged in
+  if (isLoggedIn()) window.location.href = '/src/onboard.html';
+
+  // Tab from URL param
+  const tab = new URLSearchParams(location.search).get('tab') || 'login';
+  switchTab(tab);
+
+  window.switchTab = (t) => {
+    ['login','register'].forEach(id => {
+      document.getElementById(`tab-${id}`).classList.toggle('active', id === t);
+      document.getElementById(`form-${id}`).style.display = id === t ? 'flex' : 'none';
+    });
+    document.getElementById('error-msg').style.display = 'none';
+  };
+
+  window.togglePw = (id, el) => {
+    const inp = document.getElementById(id);
+    const isText = inp.type === 'text';
+    inp.type = isText ? 'password' : 'text';
+    el.textContent = isText ? 'Show' : 'Hide';
+  };
+
+  function setErr(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function setBtnLoading(id, loading) {
+    const btn = document.getElementById(id);
+    if (loading) { btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span>Please wait...'; }
+    else { btn.disabled = false; btn.innerHTML = id === 'btn-login' ? 'Login to my account' : 'Create free account'; }
+  }
+
+  window.handleLogin = async (e) => {
+    e.preventDefault();
+    document.getElementById('error-msg').style.display = 'none';
+    setBtnLoading('btn-login', true);
+    try {
+      const data = await api.login(
+        document.getElementById('login-email').value,
+        document.getElementById('login-password').value,
+      );
+      setToken(data.access_token);
+      setUser(data.user);
+      window.location.href = '/src/onboard.html';
+    } catch (err) {
+      setErr(err.message);
+    } finally {
+      setBtnLoading('btn-login', false);
+    }
+  };
+
+  window.handleRegister = async (e) => {
+    e.preventDefault();
+    document.getElementById('error-msg').style.display = 'none';
+    setBtnLoading('btn-register', true);
+    try {
+      const data = await api.register(
+        document.getElementById('reg-email').value,
+        document.getElementById('reg-password').value,
+        document.getElementById('reg-name').value,
+      );
+      setToken(data.access_token);
+      setUser(data.user);
+      window.location.href = '/src/onboard.html';
+    } catch (err) {
+      setErr(err.message);
+    } finally {
+      setBtnLoading('btn-register', false);
+    }
+  };
+</script>
+</body>
+</html>
