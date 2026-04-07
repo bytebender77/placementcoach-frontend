@@ -262,18 +262,25 @@
   async function loadAll() {
     try {
       // Load opportunities
-      const opps = await api.getOpportunities();
+      const opps = await api.getOpportunities().catch(() => []);
       renderOpportunities(opps);
 
       // Load career path
-      const career = await api.getCareerPath();
-      careerData = career;
+      let career = null;
+      try {
+        career = await api.getCareerPath();
+        careerData = career;
+      } catch (err) {
+        console.warn('No career path found or API error', err);
+      }
+
       renderCareerPaths(career);
       renderMotivation(career);
       renderActivityInsights(career);
 
     } catch (err) {
-      showToast('Some sections failed to load. Try refreshing.', 'error');
+      console.error('Load failed', err);
+      showToast('Failed to load dashboard. Try refreshing.', 'error');
     }
   }
 
@@ -335,7 +342,19 @@
 
   function renderCareerPaths(data) {
     document.getElementById('career-loading').style.display = 'none';
-    document.getElementById('career-content').style.display = 'block';
+    const content = document.getElementById('career-content');
+    content.style.display = 'block';
+
+    if (!data || !data.primary_path) {
+      content.innerHTML = `
+        <div style="text-align:center;padding:40px;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:2.4rem;margin-bottom:16px">🎯</div>
+          <h3 style="font-family:var(--font-head);margin-bottom:10px">No career analysis yet</h3>
+          <p style="color:var(--text-3);font-size:0.9rem;margin-bottom:20px">You need to complete a v2 analysis to see your matched career paths.</p>
+          <a href="/onboard.html" class="btn btn-primary">Start v2 Analysis</a>
+        </div>`;
+      return;
+    }
 
     const primary = data.primary_path || {};
     document.getElementById('primary-fit-score').textContent = `Fit score: ${primary.fit_score || 0}/100`;
@@ -368,7 +387,19 @@
 
   function renderMotivation(data) {
     document.getElementById('motive-loading').style.display = 'none';
-    document.getElementById('motive-content').style.display = 'block';
+    const content = document.getElementById('motive-content');
+    content.style.display = 'block';
+
+    if (!data || !data.reality_check) {
+      content.innerHTML = `
+        <div style="text-align:center;padding:40px;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:2.4rem;margin-bottom:16px">🚀</div>
+          <h3 style="font-family:var(--font-head);margin-bottom:10px">Reality check pending</h3>
+          <p style="color:var(--text-3);font-size:0.9rem;margin-bottom:20px">Run a new analysis to get an honest assessment of your profile vs targets.</p>
+          <a href="/onboard.html" class="btn btn-primary">Get Assessment</a>
+        </div>`;
+      return;
+    }
 
     const rc = data.reality_check || {};
     const verdict = rc.target_company_verdict || '';
@@ -400,7 +431,19 @@
 
   function renderActivityInsights(data) {
     document.getElementById('activity-loading').style.display = 'none';
-    document.getElementById('activity-content').style.display = 'block';
+    const content = document.getElementById('activity-content');
+    content.style.display = 'block';
+
+    if (!data || !data.co_curricular_insights) {
+      content.innerHTML = `
+        <div style="text-align:center;padding:40px;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border)">
+          <div style="font-size:2.4rem;margin-bottom:16px">🎖️</div>
+          <h3 style="font-family:var(--font-head);margin-bottom:10px">Activity insights pending</h3>
+          <p style="color:var(--text-3);font-size:0.9rem;margin-bottom:20px">We need to see your co-curricular profile to tell you what signals you're sending to recruiters.</p>
+          <a href="/onboard.html" class="btn btn-primary">Update Profile</a>
+        </div>`;
+      return;
+    }
 
     const cc = data.co_curricular_insights || {};
     const insightsEl = document.getElementById('activity-insights');
