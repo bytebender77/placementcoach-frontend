@@ -277,8 +277,16 @@
     Placement<span style="color:var(--accent)">Coach</span>
   </div>
   <div class="nav-links">
+    <div style="position:relative">
+      <select id="history-select" class="btn btn-ghost"
+        style="padding:8px 16px;font-size:12px;cursor:pointer;background:transparent;color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);appearance:none;padding-right:28px;"
+        title="Switch between past analyses">
+        <option value="">⏱ History</option>
+      </select>
+      <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-3);font-size:10px;">▾</span>
+    </div>
     <a href="/onboard.html" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Re-analyse</a>
-    <button onclick="logout()" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Logout</button>
+    <button id="btn-logout" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Logout</button>
   </div>
 </nav>
 
@@ -384,12 +392,53 @@
 
   if (!isLoggedIn()) { window.location.href = '/login.html'; }
 
-  window.logout = () => { removeToken(); window.location.href = '/index.html'; };
+  document.getElementById('btn-logout').addEventListener('click', () => { removeToken(); window.location.href = '/index.html'; });
 
   const user = getUser();
   if (user) {
     const name = user.full_name ? user.full_name.split(' ')[0] : 'there';
     document.getElementById('greeting').textContent = `Hey ${name}, here's your report 👋`;
+  }
+
+  // ── Load history dropdown ─────────────────────────────
+  async function loadHistory() {
+    try {
+      const history = await api.getHistory();
+      const sel = document.getElementById('history-select');
+      history.forEach((h, i) => {
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        const d = new Date(h.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+        opt.textContent = `${d} — ${h.placement_label || '?'} (${h.placement_low||'?'}-${h.placement_high||'?'}%)`;
+        if (i === 0) opt.textContent += ' ← latest';
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', async () => {
+        const id = sel.value;
+        if (!id) return;
+        showToast('Loading analysis...', 'info', 1500);
+        document.getElementById('dashboard-content').style.display = 'none';
+        document.getElementById('loading-state').style.display = 'block';
+        try {
+          const data = await api.getResultsById(id);
+          clearDashboard();
+          renderDashboard(data);
+        } catch (err) {
+          showToast('Failed to load that analysis.', 'error');
+          document.getElementById('loading-state').style.display = 'none';
+          document.getElementById('dashboard-content').style.display = 'block';
+        }
+      });
+    } catch(e) { /* history not critical */ }
+  }
+
+  function clearDashboard() {
+    ['positives-list','risks-list','missing-keywords','ats-strengths','ats-weaknesses','ats-formatting','priority-skills','weeks-grid'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '';
+    });
+    const mn = document.getElementById('motive-note');
+    if (mn) { mn.style.display = 'none'; mn.textContent = ''; }
   }
 
   // ── Load dashboard data ───────────────────────────────
@@ -564,6 +613,7 @@
   };
 
   loadDashboard();
+  loadHistory();
 </script>
 </body>
 </html>

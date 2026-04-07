@@ -57,9 +57,12 @@ export const api = {
   getResults: () =>
     request('GET', '/me/results'),
 
-  getProfile: () =>
-    request('GET', '/me/profile'),
+  getResultsById: (analysisId) =>
+    request('GET', `/me/results/${analysisId}`),
 
   getHistory: () =>
     request('GET', '/analysis/history'),
+
+  getProfile: () =>
+    request('GET', '/me/profile'),
 };
