@@ -65,4 +65,22 @@ export const api = {
 
   getProfile: () =>
     request('GET', '/me/profile'),
+
+  // ── V2: Opportunities ──────────────────────────────────
+  findOpportunities: (analysis_id, placement_label) =>
+    request('POST', '/opportunities/find', { analysis_id, placement_label }),
+  getOpportunities: () =>
+    request('GET', '/opportunities/my'),
+  saveOpportunity: (opportunity_id) =>
+    request('POST', `/opportunities/save/${opportunity_id}`),
+  markApplied: (opportunity_id) =>
+    request('POST', `/opportunities/applied/${opportunity_id}`),
+  getSavedOpportunities: () =>
+    request('GET', '/opportunities/saved'),
+
+  // ── V2: Career Paths ───────────────────────────────────
+  generateCareerPath: (analysis_id) =>
+    request('POST', '/opportunities/career-path', { analysis_id }),
+  getCareerPath: () =>
+    request('GET', '/opportunities/career-path/latest'),
 };

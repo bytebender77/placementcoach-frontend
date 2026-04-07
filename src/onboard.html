@@ -6,192 +6,81 @@
   <title>Your Profile — PlacementCoach</title>
   <link rel="stylesheet" href="/css/styles.css"/>
   <style>
-    .onboard-page { padding: 100px 24px 60px; position: relative; z-index: 1; }
-    .onboard-wrap { max-width: 600px; margin: 0 auto; }
-    .page-title {
-      font-family: var(--font-head);
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .page-sub { color: var(--text-2); margin-bottom: 36px; font-size: 13px; }
-
-    /* Steps */
+    .onboard-page { padding: 100px 24px 60px; }
+    .onboard-wrap { max-width: 640px; margin: 0 auto; }
+    .page-title { font-family: var(--font-head); font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .page-sub { color: var(--text-2); margin-bottom: 36px; font-size: 0.95rem; }
     .step-panel { display: none; animation: fadeIn 0.4s ease both; }
     .step-panel.active { display: block; }
-
-    /* Skills picker */
-    .skills-suggestions {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      margin-top: 10px;
-    }
-
-    /* Upload zone */
-    .upload-zone {
-      border: 1.5px dashed var(--border-hi);
-      border-radius: var(--radius);
-      padding: 44px 28px;
-      text-align: center;
-      cursor: pointer;
-      transition: all var(--transition);
-      position: relative;
-    }
-    .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(232,255,90,0.03); }
-    .upload-zone input[type=file] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer;
-    }
-    .upload-icon { font-size: 2rem; margin-bottom: 10px; }
-    .upload-title { font-family: var(--font-head); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-    .upload-hint { color: var(--text-3); font-size: 12px; }
-    .upload-selected {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      background: rgba(61,220,132,0.06);
-      border: 1px solid rgba(61,220,132,0.15);
-      border-radius: var(--radius-sm);
-      padding: 12px 16px;
-      margin-top: 14px;
-      font-size: 12px;
-    }
-    .upload-selected.show { display: flex; }
-    .file-icon { font-size: 1.2rem; }
-    .file-name { font-weight: 500; flex: 1; }
-    .file-size { color: var(--text-3); font-size: 11px; }
-    .remove-file { color: var(--danger); cursor: pointer; opacity: 0.7; font-size: 12px; }
-    .remove-file:hover { opacity: 1; }
-
-    /* form row */
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
     @media(max-width:500px) { .form-row { grid-template-columns: 1fr; } }
-
-    /* Selected skills area */
-    .selected-skills {
-      display: flex; flex-wrap: wrap; gap: 6px;
-      min-height: 40px;
-      padding: 8px 12px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-    }
-    .skills-input-field {
-      background: transparent; border: none;
-      color: var(--text);
-      font-size: 13px;
-      font-family: var(--font-body);
-      flex: 1;
-      min-width: 120px;
-      padding: 2px 4px;
-    }
+    .progress-bar-wrap { height: 4px; background: var(--border); border-radius: 100px; margin-bottom: 36px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 100px; transition: width 0.4s ease; }
+    .upload-zone { border: 2px dashed var(--border-hi); border-radius: var(--radius); padding: 40px 32px; text-align: center; cursor: pointer; transition: all var(--transition); position: relative; }
+    .upload-zone:hover,.upload-zone.drag { border-color: var(--accent); background: rgba(108,99,255,0.04); }
+    .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-selected { display: none; align-items: center; gap: 12px; background: rgba(67,232,160,0.08); border: 1px solid rgba(67,232,160,0.2); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px; font-size: 0.9rem; }
+    .upload-selected.show { display: flex; }
+    .selected-skills { display: flex; flex-wrap: wrap; gap: 8px; min-height: 44px; padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .skills-input-field { background: transparent; border: none; color: var(--text); font-size: 0.9rem; flex: 1; min-width: 120px; padding: 2px 4px; }
     .skills-input-field:focus { outline: none; }
-
-    .progress-bar-wrap {
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      margin-bottom: 32px;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      border-radius: 2px;
-      transition: width 0.4s ease;
-    }
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 28px;
-      gap: 16px;
-    }
-    .spinner-btn {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(11,12,14,0.3);
-      border-top-color: #0b0c0e;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
-    }
-    .error-banner {
-      background: rgba(255,69,69,0.08);
-      border: 1px solid rgba(255,69,69,0.2);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      font-size: 12px;
-      color: var(--danger);
-      margin-bottom: 18px;
-      display: none;
-    }
-
-    .tips-box {
-      margin-top: 20px;
-      padding: 14px 18px;
-      background: rgba(232,255,90,0.04);
-      border: 1px solid rgba(232,255,90,0.12);
-      border-left: 3px solid var(--accent);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    }
-    .tips-box .tips-text {
-      font-size: 12px;
-      color: var(--text-2);
-      line-height: 1.7;
-    }
-    .tips-box strong { color: var(--text); }
+    .form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; gap: 16px; }
+    .error-banner { background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.25); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.88rem; color: var(--danger); margin-bottom: 20px; display: none; }
+    .cocurr-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .cocurr-tag { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg3); border: 1px solid var(--border-hi); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; color: var(--text-2); cursor: pointer; transition: all var(--transition); }
+    .cocurr-tag:hover,.cocurr-tag.selected { background: rgba(108,99,255,0.15); border-color: var(--accent); color: var(--accent); }
+    .analyze-step { font-size: 0.88rem; color: var(--text-3); margin-bottom: 8px; }
+    .spinner-btn { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
   </style>
 </head>
 <body>
 
 <nav class="nav">
   <div class="nav-logo">
-    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
-      <rect width="22" height="22" rx="4" fill="var(--accent)"/>
-      <path d="M6 16L11 6L16 16" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M8 13h6" stroke="#0b0c0e" stroke-width="2" stroke-linecap="round"/>
-    </svg>
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="6" fill="var(--accent)"/><path d="M6 16L11 6L16 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 13h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     Placement<span style="color:var(--accent)">Coach</span>
   </div>
   <div class="nav-links">
-    <span id="nav-user" style="font-size:12px;color:var(--text-3);letter-spacing:0.04em"></span>
-    <button onclick="logout()" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Logout</button>
+    <span id="nav-user" style="font-size:0.88rem;color:var(--text-2)"></span>
+    <button id="btn-logout" class="btn btn-ghost" style="padding:9px 16px;font-size:0.85rem;">Logout</button>
   </div>
 </nav>
 
 <div class="onboard-page">
   <div class="onboard-wrap">
-    <!-- Progress -->
+
     <div class="progress-bar-wrap">
-      <div class="progress-bar" id="progress-bar" style="width:33%"></div>
+      <div class="progress-bar" id="progress-bar" style="width:20%"></div>
     </div>
 
-    <!-- Step indicators -->
-    <div class="steps" style="margin-bottom:32px">
+    <!-- 5-step progress -->
+    <div class="steps" style="margin-bottom:36px">
       <div class="step active" id="s1"><div class="step-num">1</div><div class="step-label">Profile</div></div>
       <div class="step-line"></div>
-      <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">Resume</div></div>
+      <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">Skills</div></div>
       <div class="step-line"></div>
-      <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">Analyse</div></div>
+      <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">Activities</div></div>
+      <div class="step-line"></div>
+      <div class="step" id="s4"><div class="step-num">4</div><div class="step-label">Resume</div></div>
+      <div class="step-line"></div>
+      <div class="step" id="s5"><div class="step-num">5</div><div class="step-label">Analyse</div></div>
     </div>
 
     <div id="error-banner" class="error-banner"></div>
 
-    <!-- ── STEP 1: Profile ──────────────────────────────── -->
+    <!-- ── STEP 1: Basic Profile ──────────────────────────────────── -->
     <div class="step-panel active" id="panel-1">
-      <h1 class="page-title">Tell us about yourself</h1>
-      <p class="page-sub">We use this to personalise your placement analysis.</p>
-
-      <div style="display:flex;flex-direction:column;gap:18px">
+      <h1 class="page-title">Basic details</h1>
+      <p class="page-sub">This takes 2 minutes. Be accurate — it directly affects your analysis.</p>
+      <div style="display:flex;flex-direction:column;gap:20px">
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">CGPA / GPA</label>
-            <input class="form-input" type="number" id="cgpa" placeholder="e.g. 7.8"
-              min="0" max="10" step="0.01" required/>
+            <input class="form-input" type="number" id="cgpa" placeholder="e.g. 7.8" min="0" max="10" step="0.01"/>
           </div>
           <div class="form-group">
             <label class="form-label">Current year</label>
-            <select class="form-input" id="year" required>
+            <select class="form-input" id="year">
               <option value="">Select year</option>
               <option value="fresher">Fresher (2024 pass-out)</option>
               <option value="2nd">2nd Year</option>
@@ -200,96 +89,154 @@
             </select>
           </div>
         </div>
-
         <div class="form-group">
           <label class="form-label">College tier</label>
-          <select class="form-input" id="college_tier" required>
+          <select class="form-input" id="college_tier">
             <option value="">Select tier</option>
             <option value="tier1">Tier 1 — IIT / NIT / BITS / IIIT</option>
             <option value="tier2">Tier 2 — State govt. / reputed private</option>
             <option value="tier3">Tier 3 — Other private college</option>
           </select>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Your skills <span style="color:var(--text-3);text-transform:none;font-size:10px;letter-spacing:0.04em">(type + Enter to add)</span></label>
-          <div class="selected-skills" id="skills-container" onclick="document.getElementById('skills-input').focus()">
-            <input class="skills-input-field" id="skills-input" placeholder="e.g. Python, DSA, React..." autocomplete="off"/>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Target roles</label>
+            <input class="form-input" type="text" id="target_roles" placeholder="SDE, Data Analyst, BA..."/>
           </div>
-          <div class="skills-suggestions" id="skill-suggestions"></div>
+          <div class="form-group">
+            <label class="form-label">Dream companies</label>
+            <input class="form-input" type="text" id="target_companies" placeholder="Google, Zoho, TCS..."/>
+          </div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Target roles <span style="color:var(--text-3);text-transform:none;font-size:10px">(optional)</span></label>
-          <input class="form-input" type="text" id="target_roles" placeholder="e.g. SDE, Data Analyst, Business Analyst"/>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Preferred locations</label>
+            <input class="form-input" type="text" id="preferred_locations" placeholder="Bangalore, Remote..."/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Open to remote?</label>
+            <select class="form-input" id="open_to_remote">
+              <option value="true">Yes — remote/hybrid OK</option>
+              <option value="false">No — prefer on-site only</option>
+            </select>
+          </div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Dream companies <span style="color:var(--text-3);text-transform:none;font-size:10px">(optional)</span></label>
-          <input class="form-input" type="text" id="target_companies" placeholder="e.g. Google, TCS, Wipro, Infosys"/>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">GitHub (optional)</label>
+            <input class="form-input" type="url" id="github_url" placeholder="github.com/yourusername"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">LinkedIn (optional)</label>
+            <input class="form-input" type="url" id="linkedin_url" placeholder="linkedin.com/in/you"/>
+          </div>
         </div>
       </div>
-
       <div class="form-actions">
         <span></span>
-        <button class="btn btn-primary btn-lg" onclick="goStep2()">
-          Next: Upload resume →
-        </button>
+        <button class="btn btn-primary btn-lg" onclick="goStep2()">Next: Skills →</button>
       </div>
     </div>
 
-    <!-- ── STEP 2: Resume Upload ──────────────────────────── -->
+    <!-- ── STEP 2: Skills ─────────────────────────────────────────── -->
     <div class="step-panel" id="panel-2">
-      <h1 class="page-title">Upload your resume</h1>
-      <p class="page-sub">PDF only · Max 5 MB · Must be text-based (not scanned image)</p>
+      <h1 class="page-title">Your skills</h1>
+      <p class="page-sub">Type and press Enter, or click suggestions below.</p>
+      <div class="form-group">
+        <label class="form-label">Technical skills</label>
+        <div class="selected-skills" id="skills-container" onclick="document.getElementById('skills-input').focus()">
+          <input class="skills-input-field" id="skills-input" placeholder="Python, DSA, React..." autocomplete="off"/>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px" id="skill-suggestions"></div>
+      </div>
+      <div class="form-group" style="margin-top:20px">
+        <label class="form-label">Certifications <span style="color:var(--text-3);text-transform:none;font-size:0.78rem">(optional — e.g. AWS, Google, Coursera)</span></label>
+        <div class="selected-skills" id="certs-container" onclick="document.getElementById('certs-input').focus()">
+          <input class="skills-input-field" id="certs-input" placeholder="AWS Cloud Practitioner, Google IT Support..." autocomplete="off"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+        <button class="btn btn-primary btn-lg" onclick="goStep3()">Next: Activities →</button>
+      </div>
+    </div>
 
-      <div class="upload-zone" id="upload-zone">
-        <input type="file" id="file-input" accept=".pdf" onchange="handleFileSelect(event)"/>
-        <div class="upload-icon">📄</div>
-        <div class="upload-title">Drop your resume here</div>
-        <div class="upload-hint">or click to browse · PDF only · Max 5MB</div>
+    <!-- ── STEP 3: Co-curricular Activities ──────────────────────── -->
+    <div class="step-panel" id="panel-3">
+      <h1 class="page-title">Your activities</h1>
+      <p class="page-sub">These matter more than you think. Clubs, sports, events, freelancing — all of it.</p>
+
+      <div class="form-group">
+        <label class="form-label">Co-curricular activities <span style="color:var(--text-3);text-transform:none;font-size:0.78rem">(select all that apply)</span></label>
+        <div class="cocurr-grid" id="cocurr-grid">
+          <!-- populated by JS -->
+        </div>
+        <input class="form-input" id="cocurr-custom" placeholder="Or type your own activity..." style="margin-top:12px"/>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px" id="cocurr-selected-display"></div>
       </div>
 
-      <div class="upload-selected" id="upload-selected">
-        <span class="file-icon">📄</span>
-        <span class="file-name" id="file-name-display">resume.pdf</span>
-        <span class="file-size" id="file-size-display">—</span>
-        <span class="remove-file" onclick="clearFile()">✕ Remove</span>
+      <div class="form-group" style="margin-top:20px">
+        <label class="form-label">Notable achievements <span style="color:var(--text-3);text-transform:none;font-size:0.78rem">(hackathons won, ranks, awards, publications)</span></label>
+        <textarea class="form-input" id="achievements" rows="3" placeholder="e.g. 'Finalist at Smart India Hackathon 2024', 'AIR 2800 in GATE', 'Published paper on ML'..." style="resize:vertical"></textarea>
       </div>
 
-      <div class="tips-box">
-        <div class="tips-text">
-          <strong>→ Tips for best results:</strong>
-          Use a single-column layout · Include your skills section clearly ·
-          Avoid tables/columns in your resume (ATS can't read them) · Name your file clearly
+      <div style="margin-top:20px;padding:16px 20px;background:rgba(67,232,160,0.06);border:1px solid rgba(67,232,160,0.15);border-radius:var(--radius-sm)">
+        <div style="font-size:0.85rem;color:var(--text-2);line-height:1.7">
+          💡 <strong style="color:var(--text)">Why this matters:</strong>
+          Companies like Zoho, Juspay, and most startups actively look for co-curricular activities.
+          A debate club president signals communication skills. An open-source contributor signals initiative.
+          A hackathon winner signals problem-solving. Don't undersell yourself.
         </div>
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
-        <button class="btn btn-primary btn-lg" id="btn-upload" onclick="handleUpload()">
-          Upload &amp; analyse →
-        </button>
+        <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+        <button class="btn btn-primary btn-lg" onclick="goStep(4)">Next: Resume →</button>
       </div>
     </div>
 
-    <!-- ── STEP 3: Analysing ──────────────────────────────── -->
-    <div class="step-panel" id="panel-3">
+    <!-- ── STEP 4: Resume Upload ──────────────────────────────────── -->
+    <div class="step-panel" id="panel-4">
+      <h1 class="page-title">Upload your resume</h1>
+      <p class="page-sub">PDF only · Max 5 MB · Text-based (not scanned)</p>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept=".pdf" onchange="handleFileSelect(event)"/>
+        <div style="font-size:2.4rem;margin-bottom:12px">📄</div>
+        <div style="font-family:var(--font-head);font-weight:700;font-size:1.05rem;margin-bottom:6px">Drop your resume here</div>
+        <div style="color:var(--text-3);font-size:0.85rem">or click to browse · PDF only · Max 5MB</div>
+      </div>
+      <div class="upload-selected" id="upload-selected">
+        <span style="font-size:1.4rem">📄</span>
+        <span id="file-name-display" style="font-weight:500;flex:1">resume.pdf</span>
+        <span id="file-size-display" style="color:var(--text-3);font-size:0.82rem">—</span>
+        <span style="color:var(--danger);cursor:pointer;opacity:0.7" onclick="clearFile()">✕ Remove</span>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="goStep(3)">← Back</button>
+        <button class="btn btn-primary btn-lg" id="btn-upload" onclick="handleUpload()">Analyse everything →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 5: Analysing ──────────────────────────────────────── -->
+    <div class="step-panel" id="panel-5">
       <div style="text-align:center;padding:40px 0">
-        <div style="font-size:2.4rem;margin-bottom:20px">🤖</div>
-        <h2 class="page-title" style="margin-bottom:10px" id="analyzing-title">Uploading resume...</h2>
-        <p class="page-sub" id="analyzing-sub">Extracting text from your PDF</p>
-        <div style="margin:28px auto;max-width:340px;background:var(--border);border-radius:2px;height:4px;overflow:hidden">
-          <div id="ai-progress" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:2px;width:0%;transition:width 0.8s ease"></div>
+        <div style="font-size:3rem;margin-bottom:24px">🤖</div>
+        <h2 class="page-title" style="margin-bottom:12px">Analysing your complete profile...</h2>
+        <p class="page-sub" id="analyzing-sub">This takes about 30-45 seconds. Sit tight.</p>
+        <div style="margin:32px auto;max-width:360px;background:var(--bg3);border-radius:100px;height:6px;overflow:hidden">
+          <div id="ai-progress" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:100px;width:0%;transition:width 0.8s ease"></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px;max-width:280px;margin:0 auto;text-align:left">
-          <div class="analyze-step" id="as-1" style="font-size:12px;color:var(--text-3)">⏳ Parsing resume...</div>
-          <div class="analyze-step" id="as-2" style="font-size:12px;color:var(--text-3)">⏳ Running ATS analysis...</div>
-          <div class="analyze-step" id="as-3" style="font-size:12px;color:var(--text-3)">⏳ Scoring placement chances...</div>
-          <div class="analyze-step" id="as-4" style="font-size:12px;color:var(--text-3)">⏳ Generating your action plan...</div>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:340px;margin:0 auto;text-align:left">
+          <div class="analyze-step" id="as-1">⏳ Uploading and parsing your resume...</div>
+          <div class="analyze-step" id="as-2">⏳ Running ATS analysis...</div>
+          <div class="analyze-step" id="as-3">⏳ Scoring placement chances...</div>
+          <div class="analyze-step" id="as-4">⏳ Generating 6-week action plan...</div>
+          <div class="analyze-step" id="as-5">⏳ Analysing career paths & alternatives...</div>
+          <div class="analyze-step" id="as-6">⏳ Finding real internships & jobs for you...</div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -300,177 +247,206 @@
   import { showToast, state } from '/js/utils.js';
 
   if (!isLoggedIn()) { window.location.href = '/login.html'; }
-
   const user = getUser();
   if (user) document.getElementById('nav-user').textContent = user.full_name || user.email;
+  document.getElementById('btn-logout').addEventListener('click', () => { removeToken(); window.location.href = '/index.html'; });
 
-  window.logout = () => { removeToken(); window.location.href = '/index.html'; };
-
-  // ── Skills manager ────────────────────────────────────
-  const SUGGESTED_SKILLS = ['Python','Java','C++','JavaScript','React','SQL','DSA','ML','AWS','Docker','Git','Node.js','Spring Boot','MongoDB','TypeScript','System Design'];
+  // ── Skills manager ────────────────────────────────────────────────
+  const SKILL_SUGGESTIONS = ['Python','Java','C++','JavaScript','React','SQL','DSA','Machine Learning','AWS','Docker','Git','Node.js','Spring Boot','MongoDB','TypeScript','System Design','Flutter','Kotlin'];
   const skills = new Set();
+  const certifications = new Set();
 
-  const suggestionsEl = document.getElementById('skill-suggestions');
-  SUGGESTED_SKILLS.forEach(s => {
+  const sugEl = document.getElementById('skill-suggestions');
+  SKILL_SUGGESTIONS.forEach(s => {
     const tag = document.createElement('span');
     tag.className = 'skill-tag';
     tag.textContent = s;
-    tag.onclick = () => addSkill(s);
-    suggestionsEl.appendChild(tag);
+    tag.onclick = () => addToSet(s, skills, 'skills-container', 'skills-input', tag);
+    sugEl.appendChild(tag);
   });
 
-  function addSkill(skill) {
-    const s = skill.trim();
-    if (!s || skills.has(s)) return;
-    skills.add(s);
-    const container = document.getElementById('skills-container');
+  function addToSet(val, set, containerId, inputId, sugTag) {
+    const v = val.trim(); if (!v || set.has(v)) return;
+    set.add(v);
+    const container = document.getElementById(containerId);
+    const inputEl   = document.getElementById(inputId);
     const tag = document.createElement('span');
     tag.className = 'skill-tag selected';
-    tag.innerHTML = `${s} <span style="cursor:pointer;opacity:0.6;margin-left:2px" onclick="removeSkill('${s}', this.parentElement)">×</span>`;
-    container.insertBefore(tag, document.getElementById('skills-input'));
-
-    // grey out suggestion
-    document.querySelectorAll('.skills-suggestions .skill-tag').forEach(el => {
-      if (el.textContent === s) el.classList.add('selected');
-    });
+    tag.innerHTML = `${v} <span style="cursor:pointer;opacity:0.6" onclick="removeFromSet('${v}',this.parentElement)">×</span>`;
+    container.insertBefore(tag, inputEl);
+    if (sugTag) sugTag.classList.add('selected');
   }
 
-  window.removeSkill = (skill, el) => {
-    skills.delete(skill);
-    el.remove();
-    document.querySelectorAll('.skills-suggestions .skill-tag').forEach(t => {
-      if (t.textContent === skill) t.classList.remove('selected');
-    });
+  window.removeFromSet = (val, el) => {
+    skills.delete(val); certifications.delete(val); el.remove();
+    document.querySelectorAll('#skill-suggestions .skill-tag').forEach(t => { if (t.textContent === val) t.classList.remove('selected'); });
   };
 
-  document.getElementById('skills-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      addSkill(e.target.value);
+  document.getElementById('skills-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addToSet(e.target.value, skills, 'skills-container', 'skills-input', null); e.target.value = ''; }
+  });
+  document.getElementById('certs-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addToSet(e.target.value, certifications, 'certs-container', 'certs-input', null); e.target.value = ''; }
+  });
+
+  // ── Co-curricular picker ──────────────────────────────────────────
+  const COCURR_OPTIONS = [
+    'Coding Club member', 'Technical club organiser', 'Hackathon participant',
+    'Open source contributor', 'Club President/Secretary', 'Sports team captain',
+    'Cultural event organiser', 'MUN participant', 'Debate club',
+    'NSS/NCC volunteer', 'Freelancer', 'College magazine',
+    'Research assistant', 'Startup founder', 'Robotics club',
+    'Toastmasters / public speaking', 'YouTube/blog creator', 'Gaming/esports team',
+  ];
+  const selectedCocurr = new Set();
+  const cocurrGrid = document.getElementById('cocurr-grid');
+  COCURR_OPTIONS.forEach(opt => {
+    const tag = document.createElement('div');
+    tag.className = 'cocurr-tag';
+    tag.textContent = opt;
+    tag.onclick = () => {
+      tag.classList.toggle('selected');
+      if (tag.classList.contains('selected')) selectedCocurr.add(opt);
+      else selectedCocurr.delete(opt);
+    };
+    cocurrGrid.appendChild(tag);
+  });
+
+  document.getElementById('cocurr-custom').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const val = e.target.value.trim(); if (!val) return;
+      selectedCocurr.add(val);
+      const tag = document.createElement('span');
+      tag.className = 'skill-tag selected';
+      tag.innerHTML = `${val} <span style="cursor:pointer;opacity:0.6" onclick="this.parentElement.remove()">×</span>`;
+      document.getElementById('cocurr-selected-display').appendChild(tag);
       e.target.value = '';
     }
   });
 
-  // ── Step navigation ───────────────────────────────────
+  // ── Step navigation ───────────────────────────────────────────────
   window.goStep = (n) => {
-    document.querySelectorAll('.step-panel').forEach((p,i) => p.classList.toggle('active', i+1 === n));
-    document.getElementById('progress-bar').style.width = `${n * 33}%`;
-    ['s1','s2','s3'].forEach((id, i) => {
+    document.querySelectorAll('.step-panel').forEach((p,i) => p.classList.toggle('active', i+1===n));
+    document.getElementById('progress-bar').style.width = `${n * 20}%`;
+    ['s1','s2','s3','s4','s5'].forEach((id,i) => {
       const el = document.getElementById(id);
-      el.classList.toggle('active', i+1 === n);
-      el.classList.toggle('done', i+1 < n);
+      el.classList.toggle('active', i+1===n);
+      el.classList.toggle('done', i+1<n);
     });
     document.getElementById('error-banner').style.display = 'none';
   };
 
+  function showErr(msg) {
+    const el = document.getElementById('error-banner');
+    el.textContent = msg; el.style.display = 'block';
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
   window.goStep2 = () => {
     const cgpa = parseFloat(document.getElementById('cgpa').value);
-    const year  = document.getElementById('year').value;
-    const tier  = document.getElementById('college_tier').value;
     if (!cgpa || cgpa < 0 || cgpa > 10) return showErr('Please enter a valid CGPA (0–10).');
-    if (!year)  return showErr('Please select your year.');
-    if (!tier)  return showErr('Please select your college tier.');
-    if (skills.size === 0) return showErr('Please add at least one skill.');
+    if (!document.getElementById('year').value)         return showErr('Please select your year.');
+    if (!document.getElementById('college_tier').value) return showErr('Please select your college tier.');
     goStep(2);
   };
 
-  function showErr(msg) {
-    const el = document.getElementById('error-banner');
-    el.textContent = msg;
-    el.style.display = 'block';
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  // ── File handling ─────────────────────────────────────
-  let selectedFile = null;
-
-  window.handleFileSelect = (e) => setFile(e.target.files[0]);
-
-  window.clearFile = () => {
-    selectedFile = null;
-    document.getElementById('upload-selected').classList.remove('show');
-    document.getElementById('file-input').value = '';
+  window.goStep3 = () => {
+    if (skills.size === 0) return showErr('Please add at least one skill.');
+    goStep(3);
   };
+
+  // ── File handling ─────────────────────────────────────────────────
+  let selectedFile = null;
+  window.handleFileSelect = e => setFile(e.target.files[0]);
+  window.clearFile = () => { selectedFile = null; document.getElementById('upload-selected').classList.remove('show'); document.getElementById('file-input').value = ''; };
 
   function setFile(file) {
     if (!file) return;
-    if (file.type !== 'application/pdf') return showToast('Only PDF files are accepted.', 'error');
-    if (file.size > 5 * 1024 * 1024)    return showToast('File too large. Max 5 MB.', 'error');
+    if (file.type !== 'application/pdf') return showToast('Only PDF files accepted.', 'error');
+    if (file.size > 5*1024*1024) return showToast('File too large. Max 5MB.', 'error');
     selectedFile = file;
     document.getElementById('file-name-display').textContent = file.name;
-    document.getElementById('file-size-display').textContent = (file.size / 1024).toFixed(0) + ' KB';
+    document.getElementById('file-size-display').textContent = (file.size/1024).toFixed(0)+' KB';
     document.getElementById('upload-selected').classList.add('show');
   }
 
-  // Drag-drop
   const zone = document.getElementById('upload-zone');
-  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag'); });
-  zone.addEventListener('dragleave', ()  => zone.classList.remove('drag'));
-  zone.addEventListener('drop',      e  => { e.preventDefault(); zone.classList.remove('drag'); setFile(e.dataTransfer.files[0]); });
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); setFile(e.dataTransfer.files[0]); });
 
-  // ── Upload + analyse pipeline ─────────────────────────
+  // ── Full analysis pipeline ────────────────────────────────────────
+  function markStep(i, done) {
+    const ids = ['as-1','as-2','as-3','as-4','as-5','as-6'];
+    const el = document.getElementById(ids[i]);
+    el.style.color = done ? 'var(--success)' : 'var(--text)';
+    el.textContent = (done ? '✅' : '🔄') + ' ' + el.textContent.slice(2);
+  }
+
   window.handleUpload = async () => {
-    if (!selectedFile) return showErr('Please select your resume PDF.');
-
-    goStep(3);
-    const steps = ['as-1','as-2','as-3','as-4'];
+    if (!selectedFile) return showErr('Please select your PDF resume.');
+    goStep(5);
     const progress = document.getElementById('ai-progress');
 
-    function markStep(i, done) {
-      const el = document.getElementById(steps[i]);
-      el.style.color = done ? 'var(--success)' : 'var(--text)';
-      el.textContent = (done ? '✅' : '🔄') + ' ' + el.textContent.slice(2);
-    }
-
-    function setProgress(pct) {
-      progress.style.width = pct + '%';
-    }
+    // Collect all profile data
+    const profileData = {
+      cgpa:               parseFloat(document.getElementById('cgpa').value),
+      college_tier:       document.getElementById('college_tier').value,
+      year:               document.getElementById('year').value,
+      skills:             [...skills],
+      certifications:     [...certifications],
+      co_curricular:      [...selectedCocurr],
+      achievements:       document.getElementById('achievements').value
+                            .split('\n').map(s=>s.trim()).filter(Boolean),
+      target_roles:       document.getElementById('target_roles').value.split(',').map(s=>s.trim()).filter(Boolean),
+      target_companies:   document.getElementById('target_companies').value.split(',').map(s=>s.trim()).filter(Boolean),
+      preferred_locations:document.getElementById('preferred_locations').value.split(',').map(s=>s.trim()).filter(Boolean),
+      open_to_remote:     document.getElementById('open_to_remote').value === 'true',
+      github_url:         document.getElementById('github_url').value.trim() || null,
+      linkedin_url:       document.getElementById('linkedin_url').value.trim() || null,
+    };
 
     try {
       // 1. Upload resume
-      setProgress(10);
-      document.getElementById('as-1').style.color = 'var(--text)';
-      document.getElementById('as-1').textContent = '🔄 Parsing resume...';
-
+      progress.style.width = '10%';
       const formData = new FormData();
       formData.append('file', selectedFile);
       const uploadRes = await api.uploadResume(formData);
-      markStep(0, true);
-      setProgress(28);
+      markStep(0, true); progress.style.width = '22%';
 
-      // 2. Analyse profile
+      // 2. Analyse profile (ATS + scoring)
       document.getElementById('as-2').style.color = 'var(--text)';
       document.getElementById('as-2').textContent = '🔄 Running ATS analysis...';
       document.getElementById('as-3').style.color = 'var(--text)';
       document.getElementById('as-3').textContent = '🔄 Scoring placement chances...';
 
-      const profilePayload = {
-        resume_id:        uploadRes.resume_id,
-        cgpa:             parseFloat(document.getElementById('cgpa').value),
-        college_tier:     document.getElementById('college_tier').value,
-        year:             document.getElementById('year').value,
-        skills:           [...skills],
-        target_roles:     document.getElementById('target_roles').value.split(',').map(s=>s.trim()).filter(Boolean),
-        target_companies: document.getElementById('target_companies').value.split(',').map(s=>s.trim()).filter(Boolean),
-      };
-      const analysisRes = await api.analyzeProfile(profilePayload);
-      markStep(1, true); markStep(2, true);
-      setProgress(68);
+      const analysisRes = await api.analyzeProfile({ resume_id: uploadRes.resume_id, ...profileData });
+      markStep(1, true); markStep(2, true); progress.style.width = '44%';
 
-      // 3. Generate plan
+      // 3. Generate action plan
       document.getElementById('as-4').style.color = 'var(--text)';
-      document.getElementById('as-4').textContent = '🔄 Generating your action plan...';
+      document.getElementById('as-4').textContent = '🔄 Generating 6-week action plan...';
       await api.generatePlan(analysisRes.id);
-      markStep(3, true);
-      setProgress(100);
+      markStep(3, true); progress.style.width = '60%';
 
-      // Save and redirect
+      // 4. Career path analysis (new)
+      document.getElementById('as-5').style.color = 'var(--text)';
+      document.getElementById('as-5').textContent = '🔄 Analysing career paths & alternatives...';
+      await api.generateCareerPath(analysisRes.id);
+      markStep(4, true); progress.style.width = '78%';
+
+      // 5. Find real opportunities (new)
+      document.getElementById('as-6').style.color = 'var(--text)';
+      document.getElementById('as-6').textContent = '🔄 Finding real internships & jobs for you...';
+      await api.findOpportunities(analysisRes.id, analysisRes.placement?.label || 'Moderate');
+      markStep(5, true); progress.style.width = '100%';
+
       state.set('last_analysis_id', analysisRes.id);
       await new Promise(r => setTimeout(r, 900));
       window.location.href = '/dashboard.html';
 
-    } catch (err) {
-      goStep(2);
+    } catch(err) {
+      goStep(4);
       showErr(err.message || 'Something went wrong. Please try again.');
     }
   };

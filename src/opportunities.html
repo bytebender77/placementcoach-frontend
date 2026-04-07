@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Opportunities — PlacementCoach</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <style>
+    .page { padding: 100px 24px 80px; }
+
+    /* ── Tab navigation ───────────────────────────────────── */
+    .tab-nav { display:flex; gap:4px; background:var(--bg2); border-radius:var(--radius); padding:4px; margin-bottom:32px; border:1px solid var(--border); }
+    .tab-btn { flex:1; padding:11px; border-radius:var(--radius-sm); font-weight:600; font-size:0.88rem; color:var(--text-2); background:transparent; border:none; cursor:pointer; transition:all var(--transition); }
+    .tab-btn.active { background:var(--bg3); color:var(--text); box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; animation: fadeIn 0.3s ease both; }
+
+    /* ── Opportunity cards ────────────────────────────────── */
+    .opp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+    .opp-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:22px; transition:all var(--transition); position:relative; }
+    .opp-card:hover { border-color:var(--border-hi); transform:translateY(-2px); }
+    .opp-card.saved { border-color: rgba(108,99,255,0.3); }
+
+    .opp-type { font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; padding:3px 10px; border-radius:100px; display:inline-block; }
+    .type-internship  { background:rgba(67,232,160,0.12);  color:var(--success); }
+    .type-job         { background:rgba(108,99,255,0.12); color:var(--accent); }
+    .type-hackathon   { background:rgba(255,184,77,0.12); color:var(--warning); }
+    .type-contest     { background:rgba(255,101,132,0.12); color:var(--accent-2); }
+
+    .opp-title    { font-family:var(--font-head); font-size:1rem; font-weight:700; margin-bottom:4px; line-height:1.3; }
+    .opp-company  { font-size:0.88rem; color:var(--text-2); margin-bottom:14px; }
+    .opp-meta     { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+    .opp-chip     { font-size:0.78rem; color:var(--text-3); background:var(--bg3); padding:3px 10px; border-radius:100px; }
+    .opp-match    { font-size:0.82rem; color:var(--text-2); font-style:italic; margin-bottom:16px; line-height:1.5; border-left:2px solid var(--border-hi); padding-left:10px; }
+    .opp-actions  { display:flex; gap:8px; align-items:center; }
+    .btn-apply    { flex:1; padding:10px 16px; background:var(--accent); color:#fff; border-radius:var(--radius-sm); font-weight:600; font-size:0.88rem; text-align:center; cursor:pointer; border:none; transition:all var(--transition); text-decoration:none; display:block; }
+    .btn-apply:hover { background:#7c74ff; transform:translateY(-1px); }
+    .btn-save     { padding:10px 14px; background:var(--bg3); border:1px solid var(--border-hi); border-radius:var(--radius-sm); color:var(--text-2); font-size:0.88rem; cursor:pointer; transition:all var(--transition); }
+    .btn-save:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-save.saved { background:rgba(108,99,255,0.1); border-color:var(--accent); color:var(--accent); }
+
+    .match-score-bar { height:3px; background:var(--bg3); border-radius:100px; margin-bottom:14px; overflow:hidden; }
+    .match-score-fill { height:100%; border-radius:100px; }
+
+    /* ── Career path section ──────────────────────────────── */
+    .reality-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:24px; position:relative; overflow:hidden; }
+    .reality-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); }
+    .verdict-badge { display:inline-block; padding:6px 16px; border-radius:100px; font-size:0.82rem; font-weight:700; margin-bottom:12px; }
+    .verdict-now    { background:rgba(67,232,160,0.15); color:var(--success); }
+    .verdict-3mo    { background:rgba(255,184,77,0.12); color:var(--warning); }
+    .verdict-6mo    { background:rgba(255,87,87,0.1);  color:var(--danger); }
+    .verdict-reposition { background:rgba(255,87,87,0.1); color:var(--danger); }
+
+    .section-h { font-family:var(--font-head); font-size:1.15rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+    .alt-path-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .alt-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:22px; transition:border-color var(--transition); }
+    .alt-card:hover { border-color:var(--border-hi); }
+    .alt-fit { font-size:0.72rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+    .alt-title { font-family:var(--font-head); font-weight:700; font-size:1rem; margin-bottom:6px; }
+    .alt-salary { font-size:0.85rem; color:var(--success); font-weight:600; margin-bottom:8px; }
+    .alt-why { font-size:0.85rem; color:var(--text-2); line-height:1.6; margin-bottom:12px; }
+    .alt-steps { font-size:0.82rem; color:var(--text-3); line-height:1.7; }
+
+    /* ── Motivation card ──────────────────────────────────── */
+    .motive-card { background:linear-gradient(135deg,rgba(108,99,255,0.08),rgba(255,101,132,0.05)); border:1px solid rgba(108,99,255,0.2); border-radius:var(--radius); padding:28px; margin-bottom:24px; }
+    .motive-headline { font-family:var(--font-head); font-size:1.3rem; font-weight:800; margin-bottom:14px; line-height:1.3; }
+    .motive-body { color:var(--text-2); line-height:1.8; font-size:0.95rem; margin-bottom:16px; }
+    .tomorrow-box { background:var(--bg3); border:1px solid var(--border-hi); border-radius:var(--radius-sm); padding:16px 20px; }
+    .tomorrow-label { font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+    .tomorrow-action { font-size:0.92rem; color:var(--text); line-height:1.6; }
+
+    /* ── Activity insights ────────────────────────────────── */
+    .activity-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
+    .insight-row { display:flex; flex-direction:column; gap:10px; }
+    .insight-item { font-size:0.9rem; color:var(--text-2); line-height:1.6; padding:12px 16px; background:var(--bg3); border-radius:var(--radius-sm); border-left:3px solid var(--accent); border-top-left-radius:0; border-bottom-left-radius:0; }
+
+    /* ── Filter bar ───────────────────────────────────────── */
+    .filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+    .filter-btn { padding:6px 16px; border-radius:100px; font-size:0.82rem; font-weight:600; background:var(--bg2); border:1px solid var(--border-hi); color:var(--text-2); cursor:pointer; transition:all var(--transition); }
+    .filter-btn.active { background:rgba(108,99,255,0.12); border-color:var(--accent); color:var(--accent); }
+
+    /* ── Loading ──────────────────────────────────────────── */
+    .loading-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+
+    .source-badge { font-size:0.7rem; color:var(--text-3); position:absolute; top:12px; right:12px; }
+    .deadline-badge { font-size:0.72rem; color:var(--warning); font-weight:600; }
+
+    @media(max-width:640px) { .opp-grid,.alt-path-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="6" fill="var(--accent)"/><path d="M6 16L11 6L16 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 13h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+    Placement<span style="color:var(--accent)">Coach</span>
+  </div>
+  <div class="nav-links">
+    <a href="/dashboard.html" class="nav-link">Dashboard</a>
+    <a href="/opportunities.html" class="nav-link" style="color:var(--text)">Opportunities</a>
+    <button id="btn-logout" class="btn btn-ghost" style="padding:9px 16px;font-size:0.85rem;">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container">
+
+    <div style="margin-bottom:32px">
+      <h1 style="font-family:var(--font-head);font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:4px">Your opportunities & career paths</h1>
+      <p style="color:var(--text-2);font-size:0.92rem">Real openings matched to your profile + honest career guidance</p>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="opportunities">Live opportunities</button>
+      <button class="tab-btn" data-tab="careerpath">Career paths</button>
+      <button class="tab-btn" data-tab="motivation">Motivation + reality</button>
+      <button class="tab-btn" data-tab="activities">Activity insights</button>
+    </div>
+
+    <!-- ── TAB 1: Opportunities ──────────────────────────────── -->
+    <div class="tab-panel active" id="tab-opportunities">
+      <div id="search-summary" style="font-size:0.88rem;color:var(--text-2);margin-bottom:20px;padding:12px 16px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border)"></div>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="internship">Internships</button>
+        <button class="filter-btn" data-filter="job">Jobs</button>
+        <button class="filter-btn" data-filter="hackathon">Hackathons</button>
+        <button class="filter-btn" data-filter="contest">Contests</button>
+      </div>
+      <div class="opp-grid" id="opp-grid">
+        <!-- skeleton -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);height:220px" class="skeleton"></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);height:220px" class="skeleton"></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);height:220px" class="skeleton"></div>
+      </div>
+      <div style="margin-top:20px;text-align:center;font-size:0.85rem;color:var(--text-3)">
+        Always verify the application link before sharing personal details. Links are sourced from public listings.
+      </div>
+    </div>
+
+    <!-- ── TAB 2: Career Paths ───────────────────────────────── -->
+    <div class="tab-panel" id="tab-careerpath">
+      <div id="career-loading" style="color:var(--text-2);font-size:0.9rem;padding:20px 0">Loading career analysis...</div>
+      <div id="career-content" style="display:none">
+        <!-- Primary path -->
+        <div class="section-h">Primary career path</div>
+        <div class="reality-card" id="primary-path-card">
+          <div id="primary-fit-score" style="font-size:0.82rem;color:var(--text-3);margin-bottom:8px"></div>
+          <div id="primary-verdict" class="page-sub" style="margin-bottom:0"></div>
+          <div style="margin-top:16px">
+            <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">To make it happen</div>
+            <div id="primary-steps" style="display:flex;flex-direction:column;gap:8px"></div>
+          </div>
+        </div>
+
+        <!-- Alternate paths -->
+        <div class="section-h" style="margin-top:32px">Alternative career paths</div>
+        <p style="color:var(--text-2);font-size:0.88rem;margin-bottom:20px">Based on your profile, these paths may offer faster or more certain placement.</p>
+        <div class="alt-path-grid" id="alt-paths-grid"></div>
+      </div>
+    </div>
+
+    <!-- ── TAB 3: Motivation + Reality ──────────────────────── -->
+    <div class="tab-panel" id="tab-motivation">
+      <div id="motive-loading" style="color:var(--text-2);font-size:0.9rem;padding:20px 0">Loading your personalised assessment...</div>
+      <div id="motive-content" style="display:none">
+
+        <!-- Reality check -->
+        <div class="section-h">Reality check — target companies</div>
+        <div class="reality-card" style="margin-bottom:28px">
+          <div id="verdict-badge" class="verdict-badge"></div>
+          <div id="honest-assessment" style="color:var(--text-2);line-height:1.7;font-size:0.92rem;margin-bottom:16px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--success);margin-bottom:8px">What's working</div>
+              <div id="what-working"></div>
+            </div>
+            <div>
+              <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--danger);margin-bottom:8px">What's blocking</div>
+              <div id="what-blocking"></div>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm)">
+            <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Realistic timeline</div>
+            <div id="realistic-timeline" style="font-size:0.92rem;color:var(--text);font-weight:600"></div>
+          </div>
+        </div>
+
+        <!-- Motivation -->
+        <div class="section-h">Your personal motivation</div>
+        <div class="motive-card">
+          <div class="motive-headline" id="motive-headline"></div>
+          <div class="motive-body" id="motive-body"></div>
+          <div class="tomorrow-box">
+            <div class="tomorrow-label">Your action for tomorrow morning</div>
+            <div class="tomorrow-action" id="tomorrow-action"></div>
+          </div>
+          <div style="margin-top:16px;padding:14px 18px;background:var(--bg3);border-radius:var(--radius-sm)">
+            <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Student like you who made it</div>
+            <div id="role-model" style="font-size:0.88rem;color:var(--text-2);line-height:1.7;font-style:italic"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB 4: Activity Insights ──────────────────────────── -->
+    <div class="tab-panel" id="tab-activities">
+      <div id="activity-loading" style="color:var(--text-2);font-size:0.9rem;padding:20px 0">Loading activity analysis...</div>
+      <div id="activity-content" style="display:none">
+        <div class="activity-card">
+          <div class="section-h">What your activities say to employers</div>
+          <div id="activity-insights" class="insight-row"></div>
+        </div>
+        <div class="activity-card" id="recommend-activities-wrap" style="display:none">
+          <div class="section-h">Activities to join now — high ROI</div>
+          <div id="recommended-activities" class="opp-grid"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { api, getUser, removeToken, isLoggedIn } from '/js/api.js';
+  import { showToast, scoreColor, state } from '/js/utils.js';
+
+  if (!isLoggedIn()) window.location.href = '/login.html';
+  document.getElementById('btn-logout').addEventListener('click', () => { removeToken(); window.location.href = '/index.html'; });
+
+  let allOpportunities = [];
+  let careerData = null;
+
+  const switchTab = (tab) => {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  };
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  const filterOpps = (type, btn) => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cards = document.querySelectorAll('.opp-card');
+    cards.forEach(c => {
+      c.style.display = (type === 'all' || c.dataset.type === type) ? '' : 'none';
+    });
+  };
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => filterOpps(btn.dataset.filter, btn));
+  });
+
+  async function loadAll() {
+    try {
+      // Load opportunities
+      const opps = await api.getOpportunities();
+      renderOpportunities(opps);
+
+      // Load career path
+      const career = await api.getCareerPath();
+      careerData = career;
+      renderCareerPaths(career);
+      renderMotivation(career);
+      renderActivityInsights(career);
+
+    } catch (err) {
+      showToast('Some sections failed to load. Try refreshing.', 'error');
+    }
+  }
+
+  function renderOpportunities(data) {
+    const opps = data.opportunities || data || [];
+    allOpportunities = opps;
+
+    const summary = data.search_summary || `Found ${opps.length} opportunities matched to your profile.`;
+    document.getElementById('search-summary').innerHTML =
+      `<strong style="color:var(--text)">Job market for you:</strong> ${summary}`;
+
+    const grid = document.getElementById('opp-grid');
+    grid.innerHTML = '';
+
+    if (!opps.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-2)">No opportunities found. Try updating your profile with more skills.</div>`;
+      return;
+    }
+
+    opps.forEach((opp, i) => {
+      const color = opp.match_score >= 80 ? 'var(--success)' : opp.match_score >= 60 ? 'var(--warning)' : 'var(--text-3)';
+      const typeClass = `type-${opp.type}`;
+      const deadlineHtml = opp.deadline && opp.deadline !== 'Rolling'
+        ? `<span class="opp-chip deadline-badge">⏰ ${opp.deadline}</span>` : '';
+
+      const card = document.createElement('div');
+      card.className = 'opp-card';
+      card.dataset.type = opp.type;
+      card.dataset.id = opp.id || i;
+      card.innerHTML = `
+        <span class="source-badge">${opp.source || ''}</span>
+        <span class="opp-type ${typeClass}">${opp.type}</span>
+        <div class="opp-title">${opp.title}</div>
+        <div class="opp-company">${opp.company}${opp.location ? ' · '+opp.location : ''}</div>
+        <div class="opp-meta">
+          ${opp.stipend_or_ctc ? `<span class="opp-chip" style="color:var(--success);background:rgba(67,232,160,0.08)">${opp.stipend_or_ctc}</span>` : ''}
+          ${opp.duration ? `<span class="opp-chip">${opp.duration}</span>` : ''}
+          ${deadlineHtml}
+        </div>
+        <div class="match-score-bar"><div class="match-score-fill" style="width:${opp.match_score}%;background:${color}"></div></div>
+        <div class="opp-match">${opp.match_reason || 'Good match for your profile'}</div>
+        <div class="opp-actions">
+          <a href="${opp.apply_url}" target="_blank" rel="noopener" class="btn-apply">Apply now →</a>
+          <button class="btn-save" data-id="${opp.id || i}" data-idx="${i}">Save</button>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    grid.querySelectorAll('.btn-save').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const idx = btn.dataset.idx;
+        btn.textContent = 'Saved ✓';
+        btn.classList.add('saved');
+        try { await api.saveOpportunity(id); } catch(e) {}
+      });
+    });
+  }
+
+  function renderCareerPaths(data) {
+    document.getElementById('career-loading').style.display = 'none';
+    document.getElementById('career-content').style.display = 'block';
+
+    const primary = data.primary_path || {};
+    document.getElementById('primary-fit-score').textContent = `Fit score: ${primary.fit_score || 0}/100`;
+    document.getElementById('primary-verdict').textContent = primary.verdict || '';
+
+    const stepsEl = document.getElementById('primary-steps');
+    (primary.to_make_it_happen || []).forEach(step => {
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size:0.88rem;color:var(--text-2);padding:10px 14px;background:var(--bg3);border-radius:var(--radius-sm);line-height:1.6';
+      div.textContent = step;
+      stepsEl.appendChild(div);
+    });
+
+    const altGrid = document.getElementById('alt-paths-grid');
+    (data.alternate_paths || []).forEach(path => {
+      const scoreColor = path.fit_score >= 70 ? 'var(--success)' : 'var(--warning)';
+      altGrid.innerHTML += `
+        <div class="alt-card">
+          <div class="alt-fit" style="color:${scoreColor}">Fit: ${path.fit_score}/100</div>
+          <div class="alt-title">${path.title}</div>
+          <div class="alt-salary">${path.salary_range}</div>
+          <div class="alt-why">${path.why_this_student}</div>
+          <div style="font-size:0.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:6px">First steps</div>
+          <div class="alt-steps">${path.how_to_pivot}</div>
+          <div style="margin-top:10px;font-size:0.75rem;color:var(--text-3)">⏱ ${path.timeline}</div>
+          ${(path.example_companies||[]).length ? `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">${path.example_companies.map(c=>`<span style="font-size:0.72rem;background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:2px 8px;color:var(--text-3)">${c}</span>`).join('')}</div>` : ''}
+        </div>`;
+    });
+  }
+
+  function renderMotivation(data) {
+    document.getElementById('motive-loading').style.display = 'none';
+    document.getElementById('motive-content').style.display = 'block';
+
+    const rc = data.reality_check || {};
+    const verdict = rc.target_company_verdict || '';
+    const verdictBadge = document.getElementById('verdict-badge');
+    verdictBadge.textContent = verdict;
+    if (verdict.includes('now'))        verdictBadge.className = 'verdict-badge verdict-now';
+    else if (verdict.includes('3'))     verdictBadge.className = 'verdict-badge verdict-3mo';
+    else if (verdict.includes('6'))     verdictBadge.className = 'verdict-badge verdict-6mo';
+    else                                verdictBadge.className = 'verdict-badge verdict-reposition';
+
+    document.getElementById('honest-assessment').textContent = rc.honest_assessment || '';
+    document.getElementById('realistic-timeline').textContent = rc.realistic_timeline || '';
+
+    const workingEl = document.getElementById('what-working');
+    (rc.what_is_working || []).forEach(w => {
+      workingEl.innerHTML += `<div style="font-size:0.85rem;color:var(--text-2);margin-bottom:6px;display:flex;gap:8px"><span style="color:var(--success);flex-shrink:0">✓</span>${w}</div>`;
+    });
+    const blockingEl = document.getElementById('what-blocking');
+    (rc.what_is_blocking || []).forEach(b => {
+      blockingEl.innerHTML += `<div style="font-size:0.85rem;color:var(--text-2);margin-bottom:6px;display:flex;gap:8px"><span style="color:var(--danger);flex-shrink:0">✕</span>${b}</div>`;
+    });
+
+    const motive = data.motivation || {};
+    document.getElementById('motive-headline').textContent  = motive.headline || '';
+    document.getElementById('motive-body').textContent      = motive.body || '';
+    document.getElementById('tomorrow-action').textContent  = motive.tomorrow_action || '';
+    document.getElementById('role-model').textContent       = motive.role_model_path || '';
+  }
+
+  function renderActivityInsights(data) {
+    document.getElementById('activity-loading').style.display = 'none';
+    document.getElementById('activity-content').style.display = 'block';
+
+    const cc = data.co_curricular_insights || {};
+    const insightsEl = document.getElementById('activity-insights');
+
+    if (cc.signals_to_employers) {
+      insightsEl.innerHTML += `<div class="insight-item"><strong>What employers see:</strong> ${cc.signals_to_employers}</div>`;
+    }
+    if (cc.strongest_activity) {
+      insightsEl.innerHTML += `<div class="insight-item"><strong>Your strongest signal:</strong> ${cc.strongest_activity}</div>`;
+    }
+    if (cc.how_to_use_in_interview) {
+      insightsEl.innerHTML += `<div class="insight-item"><strong>How to use in interviews:</strong> ${cc.how_to_use_in_interview}</div>`;
+    }
+
+    const recs = cc.recommended_activities || [];
+    if (recs.length) {
+      document.getElementById('recommend-activities-wrap').style.display = 'block';
+      const recsEl = document.getElementById('recommended-activities');
+      recs.forEach(rec => {
+        recsEl.innerHTML += `
+          <div class="opp-card">
+            <div class="opp-title" style="font-size:0.95rem">${rec.activity}</div>
+            <div class="opp-company" style="margin-bottom:12px">${rec.why}</div>
+            <div style="font-size:0.85rem;color:var(--accent);font-weight:500">→ ${rec.how_to_join}</div>
+          </div>`;
+      });
+    }
+  }
+
+  loadAll();
+</script>
+</body>
+</html>
