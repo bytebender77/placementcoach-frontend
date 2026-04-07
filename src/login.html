@@ -182,7 +182,7 @@
   import { showToast } from '/js/utils.js';
 
   // Redirect if already logged in
-  if (isLoggedIn()) window.location.href = '/onboard.html';
+  if (isLoggedIn()) window.location.href = '/dashboard.html';
 
   // ── Tab switching ───────────────────────────────────────
   function switchTab(t) {
@@ -234,7 +234,7 @@
       );
       setToken(data.access_token);
       setUser(data.user);
-      window.location.href = '/onboard.html';
+      window.location.href = '/dashboard.html';
     } catch (err) {
       setErr(err.message);
     } finally {
