@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Your Results — PlacementCoach</title>
-  <link rel="stylesheet" href="/src/css/styles.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
   <style>
     .dash-page { padding: 100px 24px 80px; position: relative; z-index: 1; }
 
@@ -277,7 +277,7 @@
     Placement<span style="color:var(--accent)">Coach</span>
   </div>
   <div class="nav-links">
-    <a href="/src/onboard.html" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Re-analyse</a>
+    <a href="/onboard.html" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Re-analyse</a>
     <button onclick="logout()" class="btn btn-ghost" style="padding:8px 16px;font-size:12px;">Logout</button>
   </div>
 </nav>
@@ -379,12 +379,12 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { api, getUser, removeToken, isLoggedIn } from '/src/js/api.js';
-  import { scoreColor, labelColor, buildScoreRing, showToast } from '/src/js/utils.js';
+  import { api, getUser, removeToken, isLoggedIn } from '/js/api.js';
+  import { scoreColor, labelColor, buildScoreRing, showToast } from '/js/utils.js';
 
-  if (!isLoggedIn()) { window.location.href = '/src/login.html'; }
+  if (!isLoggedIn()) { window.location.href = '/login.html'; }
 
-  window.logout = () => { removeToken(); window.location.href = '/src/index.html'; };
+  window.logout = () => { removeToken(); window.location.href = '/index.html'; };
 
   const user = getUser();
   if (user) {
@@ -403,7 +403,7 @@
             <div style="font-size:2.4rem;margin-bottom:14px">📭</div>
             <div style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;margin-bottom:10px">No results yet</div>
             <div style="color:var(--text-2);margin-bottom:20px;font-size:13px">Complete your profile and upload your resume to get your report.</div>
-            <a href="/src/onboard.html" class="btn btn-primary btn-lg">Start analysis →</a>
+            <a href="/onboard.html" class="btn btn-primary btn-lg">Start analysis →</a>
           </div>`;
         return;
       }

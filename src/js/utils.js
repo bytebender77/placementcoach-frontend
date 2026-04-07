@@ -76,7 +76,7 @@ export function buildScoreRing(score, label, color) {
 // ── Redirect if not logged in ─────────────────────────────
 export function requireAuth() {
   if (!localStorage.getItem('pc_token')) {
-    window.location.href = '/src/login.html';
+    window.location.href = '/login.html';
   }
 }
 

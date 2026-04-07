@@ -25,7 +25,7 @@ async function request(method, path, body = null, isMultipart = false) {
 
   if (res.status === 401) {
     removeToken();
-    window.location.href = '/src/login.html';
+    window.location.href = '/login.html';
     return;
   }
 

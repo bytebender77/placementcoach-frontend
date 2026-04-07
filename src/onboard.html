@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Your Profile — PlacementCoach</title>
-  <link rel="stylesheet" href="/src/css/styles.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
   <style>
     .onboard-page { padding: 100px 24px 60px; position: relative; z-index: 1; }
     .onboard-wrap { max-width: 600px; margin: 0 auto; }
@@ -296,15 +296,15 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { api, getUser, removeToken, isLoggedIn } from '/src/js/api.js';
-  import { showToast, state } from '/src/js/utils.js';
+  import { api, getUser, removeToken, isLoggedIn } from '/js/api.js';
+  import { showToast, state } from '/js/utils.js';
 
-  if (!isLoggedIn()) { window.location.href = '/src/login.html'; }
+  if (!isLoggedIn()) { window.location.href = '/login.html'; }
 
   const user = getUser();
   if (user) document.getElementById('nav-user').textContent = user.full_name || user.email;
 
-  window.logout = () => { removeToken(); window.location.href = '/src/index.html'; };
+  window.logout = () => { removeToken(); window.location.href = '/index.html'; };
 
   // ── Skills manager ────────────────────────────────────
   const SUGGESTED_SKILLS = ['Python','Java','C++','JavaScript','React','SQL','DSA','ML','AWS','Docker','Git','Node.js','Spring Boot','MongoDB','TypeScript','System Design'];
@@ -467,7 +467,7 @@
       // Save and redirect
       state.set('last_analysis_id', analysisRes.id);
       await new Promise(r => setTimeout(r, 900));
-      window.location.href = '/src/dashboard.html';
+      window.location.href = '/dashboard.html';
 
     } catch (err) {
       goStep(2);

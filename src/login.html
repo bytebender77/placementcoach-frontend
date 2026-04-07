@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login — PlacementCoach</title>
-  <link rel="stylesheet" href="/src/css/styles.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
   <style>
     .auth-page {
       min-height: 100vh;
@@ -179,11 +179,11 @@
 </div>
 
 <script type="module">
-  import { api, setToken, setUser, isLoggedIn } from '/src/js/api.js';
-  import { showToast } from '/src/js/utils.js';
+  import { api, setToken, setUser, isLoggedIn } from '/js/api.js';
+  import { showToast } from '/js/utils.js';
 
   // Redirect if already logged in
-  if (isLoggedIn()) window.location.href = '/src/onboard.html';
+  if (isLoggedIn()) window.location.href = '/onboard.html';
 
   // Tab from URL param
   const tab = new URLSearchParams(location.search).get('tab') || 'login';
@@ -227,7 +227,7 @@
       );
       setToken(data.access_token);
       setUser(data.user);
-      window.location.href = '/src/onboard.html';
+      window.location.href = '/onboard.html';
     } catch (err) {
       setErr(err.message);
     } finally {
@@ -247,7 +247,7 @@
       );
       setToken(data.access_token);
       setUser(data.user);
-      window.location.href = '/src/onboard.html';
+      window.location.href = '/onboard.html';
     } catch (err) {
       setErr(err.message);
     } finally {
