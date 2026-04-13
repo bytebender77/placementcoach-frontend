@@ -10,10 +10,10 @@
   --text:       #e8e9eb;
   --text-2:     #b8bac4;
   --text-3:     #6b6f7a;
-  --accent:     #e8ff5a;
+  --accent:     #6c63ff;
   --accent-2:   #ff6b35;
   --accent-3:   #5aadff;
-  --accent-glow:rgba(232,255,90,0.20);
+  --accent-glow:rgba(108,99,255,0.20);
   --success:    #3ddc84;
   --warning:    #ffb84d;
   --danger:     #ff4545;
@@ -101,11 +101,11 @@ body::before {
 }
 .btn-primary {
   background: var(--accent);
-  color: #0b0c0e;
+  color: #fff;
   font-weight: 600;
 }
 .btn-primary:hover {
-  background: #f0ff80;
+  background: #5a52e0;
   transform: translateY(-1px);
   box-shadow: 0 0 24px var(--accent-glow);
 }
@@ -176,7 +176,7 @@ select.form-input { appearance: none; cursor: pointer; }
 .badge-success { background: rgba(61,220,132,0.12); color: var(--success); }
 .badge-warning { background: rgba(255,184,77,0.12); color: var(--warning); }
 .badge-danger  { background: rgba(255,69,69,0.12);  color: var(--danger); }
-.badge-accent  { background: rgba(232,255,90,0.12); color: var(--accent); }
+.badge-accent  { background: rgba(108,99,255,0.12); color: var(--accent); }
 
 /* ── Toast ───────────────────────────────────────────────── */
 #toast-container {
@@ -229,7 +229,7 @@ select.form-input { appearance: none; cursor: pointer; }
 .step.active .step-num {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0b0c0e;
+  color: #fff;
 }
 .step.done .step-num {
   background: var(--success);
