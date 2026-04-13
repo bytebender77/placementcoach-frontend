@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "",
+  "outputDirectory": "src",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [

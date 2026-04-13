@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pricing — PlacementCoach</title>
-  <link rel="stylesheet" href="/src/css/styles.css"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
   <!-- Razorpay checkout script -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
@@ -112,8 +112,8 @@
     Placement<span style="color:var(--accent)">Coach</span>
   </div>
   <div class="nav-links">
-    <a href="/src/dashboard.html" class="nav-link">Dashboard</a>
-    <a href="/src/opportunities.html" class="nav-link">Opportunities</a>
+    <a href="/dashboard.html" class="nav-link">Dashboard</a>
+    <a href="/opportunities.html" class="nav-link">Opportunities</a>
     <span id="current-plan-badge" style="font-size:0.82rem;color:var(--text-3)"></span>
   </div>
 </nav>
@@ -161,8 +161,8 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { api, getUser, removeToken, isLoggedIn, getToken } from '/src/js/api.js';
-  import { showToast } from '/src/js/utils.js';
+  import { api, getUser, removeToken, isLoggedIn, getToken } from '/js/api.js';
+  import { showToast } from '/js/utils.js';
 
   const API_BASE = window.location.hostname === 'localhost'
     ? 'http://localhost:8000'
@@ -242,7 +242,7 @@
       } else if (plan.id === 'free') {
         ctaLabel = currentPlanId !== 'free' ? 'Cancel to downgrade' : 'Get started free';
         ctaClass = 'ghost';
-        ctaAction = currentPlanId !== 'free' ? `cancelPlan()` : `window.location='/src/login.html?tab=register'`;
+        ctaAction = currentPlanId !== 'free' ? `cancelPlan()` : `window.location='/login.html?tab=register'`;
       } else {
         ctaLabel = currentPlanId === 'free' ? `Upgrade — ₹${plan.price_inr}/mo` : `Switch to ${plan.name}`;
         ctaClass = 'primary';
@@ -280,7 +280,7 @@
   // ── Razorpay checkout ─────────────────────────────────────────────────────
   window.startCheckout = async (planId, priceInr) => {
     if (!isLoggedIn()) {
-      window.location.href = `/src/login.html?tab=register&redirect=pricing`;
+      window.location.href = `/login.html?tab=register&redirect=pricing`;
       return;
     }
 
