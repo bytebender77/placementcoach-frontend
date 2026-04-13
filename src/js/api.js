@@ -59,6 +59,9 @@ async function request(method, path, body = null, isMultipart = false) {
       return;
     }
 
+    // 204 No Content (DELETE responses) — no body to parse
+    if (res.status === 204) return null;
+
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.detail || `Request failed: ${res.status}`);
     return data;
