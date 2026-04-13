@@ -23,7 +23,7 @@ export function isLoggedIn()      { return !!getToken(); }
 async function fetchWithRetry(url, options, retries = 2) {
   try {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const id = setTimeout(() => controller.abort(), 120000); // Increased to 120s timeout
     
     const response = await fetch(url, {
       ...options,
@@ -33,7 +33,10 @@ async function fetchWithRetry(url, options, retries = 2) {
     clearTimeout(id);
     return response;
   } catch (err) {
-    if (retries > 0 && err.name !== 'AbortError') {
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. The operation is taking longer than expected. Please try again or check if the document is very large.');
+    }
+    if (retries > 0) {
       console.log(`Retrying... (${retries} left)`);
       return fetchWithRetry(url, options, retries - 1);
     }
