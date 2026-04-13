@@ -99,6 +99,8 @@
     <a href="/dashboard.html" class="nav-link">Dashboard</a>
     <a href="/opportunities.html" class="nav-link" style="color:var(--text)">Opportunities</a>
     <a href="/chat.html" class="nav-link">DocuMind</a>
+    <a href="/pricing.html" class="nav-link">Pricing</a>
+    <div id="usage-meter" style="margin-right:10px"></div>
     <button id="btn-logout" class="btn btn-ghost" style="padding:9px 16px;font-size:0.85rem;">Logout</button>
   </div>
 </nav>
@@ -228,8 +230,11 @@
 <script type="module">
   import { api, getUser, removeToken, isLoggedIn } from '/js/api.js';
   import { showToast, scoreColor, state } from '/js/utils.js';
+  import { mountUsageMeter } from '/js/usage_meter.js';
 
   if (!isLoggedIn()) window.location.href = '/login.html';
+  
+  mountUsageMeter();
   document.getElementById('btn-logout').addEventListener('click', () => { removeToken(); window.location.href = '/index.html'; });
 
   let allOpportunities = [];

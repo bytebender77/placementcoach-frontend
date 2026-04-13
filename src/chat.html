@@ -511,6 +511,8 @@
     <a href="/dashboard.html" class="nav-link">Dashboard</a>
     <a href="/opportunities.html" class="nav-link">Opportunities</a>
     <a href="/chat.html" class="nav-link" style="color:var(--accent)">DocuMind</a>
+    <a href="/pricing.html" class="nav-link">Pricing</a>
+    <div id="usage-meter" style="margin-right:10px"></div>
     <button class="btn btn-ghost" id="btn-logout">Log Out</button>
   </div>
 </nav>
@@ -593,11 +595,14 @@
 
 <script type="module">
 import { api, getToken, isLoggedIn, removeToken } from '/js/api.js';
+import { mountUsageMeter } from '/js/usage_meter.js';
 
 // ── Auth guard ────────────────────
 if (!isLoggedIn()) {
   window.location.href = '/login.html';
 }
+
+mountUsageMeter();
 
 document.getElementById('btn-logout').addEventListener('click', () => {
   removeToken();

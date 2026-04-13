@@ -1,48 +1,23 @@
-// ── API base URL ────────────────────────────────────────────
-const API_BASE =
-  typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:8000'
-    : 'https://placementcoach-api.onrender.com';
+/**
+ * api.js — Updated with billing endpoints + 402 quota handler
+ *
+ * Key addition: the request() wrapper now handles HTTP 402 (Payment Required)
+ * by showing the quota modal automatically. This means any route that returns
+ * 402 will show the upgrade prompt without any extra code in the caller.
+ */
 
-// ── Token helpers ─────────────────────────────────────────
-export function getToken()        { return typeof window !== 'undefined' ? localStorage.getItem('pc_token') : null; }
-export function setToken(t)       { if (typeof window !== 'undefined') localStorage.setItem('pc_token', t); }
-export function removeToken()     { 
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('pc_token'); 
-    localStorage.removeItem('pc_user'); 
-  }
-}
-export function getUser()         { 
-  return typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('pc_user') || 'null') : null; 
-}
-export function setUser(u)        { if (typeof window !== 'undefined') localStorage.setItem('pc_user', JSON.stringify(u)); }
-export function isLoggedIn()      { return !!getToken(); }
+import { showQuotaModal } from './usage_meter.js';
 
-// ── Core fetch wrapper with timeout & retry ───────────────
-async function fetchWithRetry(url, options, retries = 2) {
-  try {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 120000); // Increased to 120s timeout
-    
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    
-    clearTimeout(id);
-    return response;
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      throw new Error('Request timed out. The operation is taking longer than expected. Please try again or check if the document is very large.');
-    }
-    if (retries > 0) {
-      console.log(`Retrying... (${retries} left)`);
-      return fetchWithRetry(url, options, retries - 1);
-    }
-    throw err;
-  }
-}
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
+  : 'https://placementcoach-api.onrender.com';
+
+export function getToken()   { return localStorage.getItem('pc_token'); }
+export function setToken(t)  { localStorage.setItem('pc_token', t); }
+export function removeToken(){ localStorage.removeItem('pc_token'); localStorage.removeItem('pc_user'); }
+export function getUser()    { return JSON.parse(localStorage.getItem('pc_user') || 'null'); }
+export function setUser(u)   { localStorage.setItem('pc_user', JSON.stringify(u)); }
+export function isLoggedIn() { return !!getToken(); }
 
 async function request(method, path, body = null, isMultipart = false) {
   const headers = {};
@@ -53,32 +28,31 @@ async function request(method, path, body = null, isMultipart = false) {
   const config = { method, headers };
   if (body) config.body = isMultipart ? body : JSON.stringify(body);
 
-  try {
-    const res = await fetchWithRetry(`${API_BASE}${path}`, config);
+  const res = await fetch(`${API_BASE}${path}`, config);
 
-    if (res.status === 401) {
-      removeToken();
-      if (typeof window !== 'undefined') window.location.href = '/login.html';
-      return;
-    }
-
-    // 204 No Content (DELETE responses) — no body to parse
-    if (res.status === 204) return null;
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || `Request failed: ${res.status}`);
-    return data;
-  } catch (err) {
-    console.error('API Request Error:', err);
-    throw err;
+  if (res.status === 401) {
+    removeToken();
+    window.location.href = '/src/login.html';
+    return;
   }
+
+  // ── 402 Payment Required → show upgrade modal ──────────────────────────
+  if (res.status === 402) {
+    const data = await res.json().catch(() => ({}));
+    const detail = typeof data.detail === 'object' ? data.detail : {};
+    showQuotaModal(detail);
+    throw new Error(detail.message || 'Upgrade required');
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || `Request failed: ${res.status}`);
+  return data;
 }
 
-// ── Auth & Features ───────────────────────────────────────
 export const api = {
+  // Auth
   register: (email, password, full_name) =>
     request('POST', '/auth/register', { email, password, full_name }),
-
   login: (email, password) =>
     request('POST', '/auth/login', { email, password }),
 
@@ -86,62 +60,49 @@ export const api = {
   uploadResume: (formData) =>
     request('POST', '/resume/upload', formData, true),
 
-  // Analysis
+  // Analysis (quota-gated on backend — 402 auto-shows modal)
   analyzeProfile: (payload) =>
     request('POST', '/analysis/analyze-profile', payload),
-
   generatePlan: (analysis_id) =>
     request('POST', '/analysis/generate-plan', { analysis_id }),
+  getHistory: () =>
+    request('GET', '/analysis/history'),
 
   // Dashboard
   getResults: () =>
     request('GET', '/me/results'),
-
-  getResultsById: (analysisId) =>
-    request('GET', `/me/results/${analysisId}`),
-
-  getHistory: () =>
-    request('GET', '/analysis/history'),
-
   getProfile: () =>
     request('GET', '/me/profile'),
 
-  // ── PageIndex (Reasoning API) ───────────────────────────
-  pageIndex: {
-    upload: (formData) => 
-      request('POST', '/pageindex/upload', formData, true),
-    
-    chat: (document_id, query) =>
-      request('POST', '/pageindex/chat', { document_id, query }),
-    
-    multiChat: (documents, query) =>
-      request('POST', '/pageindex/chat/multi', { documents, query }),
-    
-    getDocuments: () =>
-      request('GET', '/pageindex/documents'),
-    
-    getTree: (document_id) =>
-      request('GET', `/pageindex/tree/${document_id}`),
-      
-    delete: (document_id) =>
-      request('DELETE', `/pageindex/${document_id}`),
-  },
-
-  // ── V2: Opportunities ──────────────────────────────────
+  // Opportunities (feature-gated — 402 auto-shows modal)
   findOpportunities: (analysis_id, placement_label) =>
-    request('POST', '/opportunities/find', { analysis_id, placement_label }),
+    request('POST', '/analysis/find-opportunities', { analysis_id, placement_label }),
   getOpportunities: () =>
     request('GET', '/opportunities/my'),
   saveOpportunity: (opportunity_id) =>
     request('POST', `/opportunities/save/${opportunity_id}`),
   markApplied: (opportunity_id) =>
     request('POST', `/opportunities/applied/${opportunity_id}`),
-  getSavedOpportunities: () =>
-    request('GET', '/opportunities/saved'),
 
-  // ── V2: Career Paths ───────────────────────────────────
+  // Career path (feature-gated)
   generateCareerPath: (analysis_id) =>
-    request('POST', '/opportunities/career-path', { analysis_id }),
+    request('POST', '/analysis/career-path', { analysis_id }),
   getCareerPath: () =>
     request('GET', '/opportunities/career-path/latest'),
+
+  // ── Billing ────────────────────────────────────────────────────────────
+  getPlans: () =>
+    request('GET', '/billing/plans'),
+  getMySubscription: () =>
+    request('GET', '/billing/my-subscription'),
+  getUsageStatus: () =>
+    request('GET', '/billing/usage'),
+  createOrder: (plan_id) =>
+    request('POST', '/billing/create-order', { plan_id }),
+  verifyPayment: (payload) =>
+    request('POST', '/billing/verify-payment', payload),
+  cancelSubscription: () =>
+    request('POST', '/billing/cancel'),
+  getPaymentHistory: () =>
+    request('GET', '/billing/history'),
 };
