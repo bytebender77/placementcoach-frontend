@@ -4,380 +4,609 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pricing — PlacementCoach</title>
-  <link rel="stylesheet" href="/css/styles.css"/>
-  <!-- Razorpay checkout script -->
+  <meta name="description" content="Simple, honest pricing for PlacementCoach. Start free, upgrade when you need more."/>
+  <!-- Inter font — matches the screenshot -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <!-- Razorpay -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
-    .pricing-page { padding: 100px 24px 80px; }
-    .pricing-header { text-align: center; margin-bottom: 56px; }
-    .pricing-title {
-      font-family: var(--font-head); font-size: clamp(2rem,5vw,3rem);
-      font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px;
-    }
-    .pricing-sub { color: var(--text-2); font-size: 1rem; max-width: 480px; margin: 0 auto; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg:       #16171a;
+      --card:     #1e1f23;
+      --card-hi:  #232428;
+      --border:   #2a2b30;
+      --border-hi:#3a3c44;
+      --text:     #f0f1f3;
+      --text-2:   #9a9caa;
+      --text-dim: #555760;
+      --green:    #3ddc84;
+      --blue:     #5b8cf8;
+      --amber:    #e09a2b;
+      --radius:   14px;
+      --font:     'Inter', -apple-system, sans-serif;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+
+    /* ── Nav ─────────────────────────────── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-link {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: var(--text); }
+    .nav-link.active { color: var(--text); }
+    #current-plan-badge {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 100px;
+    }
+
+    /* ── Page ────────────────────────────── */
+    .pricing-page {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 64px 24px 100px;
+    }
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .pricing-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .pricing-sub {
+      color: var(--text-2);
+      font-size: 0.98rem;
+      max-width: 440px;
+      margin: 0 auto 12px;
+    }
+    #current-usage {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    /* ── Plans grid ───────────────────────── */
     .plans-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-      max-width: 860px;
-      margin: 0 auto;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-items: start;
     }
+    @media (max-width: 720px) {
+      .plans-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Plan card ────────────────────────── */
     .plan-card {
-      background: var(--bg2);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 32px 28px;
+      border-radius: var(--radius);
+      padding: 28px 24px 26px;
       position: relative;
-      transition: border-color var(--transition), transform var(--transition);
+      transition: border-color 0.2s, transform 0.2s;
     }
-    .plan-card:hover { border-color: var(--border-hi); transform: translateY(-3px); }
+    .plan-card:hover { transform: translateY(-2px); }
     .plan-card.featured {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent);
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue), 0 0 32px rgba(91,140,248,0.12);
     }
-    .popular-badge {
-      position: absolute;
-      top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--accent);
-      color: white;
-      font-size: 0.72rem;
+
+    /* ── Badge ────────────────────────────── */
+    .plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 4px 16px;
+      padding: 4px 12px;
       border-radius: 100px;
-      white-space: nowrap;
+      margin-bottom: 16px;
     }
-    .plan-name { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .badge-free  { background: rgba(61,220,132,0.15); color: var(--green); }
+    .badge-pop   { background: rgba(91,140,248,0.15); color: var(--blue); }
+    .badge-pro   { background: rgba(224,154,43,0.15); color: var(--amber); }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ── Plan meta ────────────────────────── */
+    .plan-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
     .plan-price {
-      display: flex; align-items: baseline; gap: 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      line-height: 1;
       margin-bottom: 4px;
     }
-    .plan-currency { font-size: 1.1rem; color: var(--text-2); font-weight: 500; margin-top: 6px; }
-    .plan-amount { font-family: var(--font-head); font-size: 3rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
-    .plan-cycle { font-size: 0.85rem; color: var(--text-3); margin-bottom: 24px; }
-    .plan-limit {
-      background: var(--bg3); border-radius: var(--radius-sm);
-      padding: 10px 14px; margin-bottom: 20px;
-      font-size: 0.88rem; color: var(--text-2);
-      display: flex; align-items: center; gap: 8px;
+    .price-symbol {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 4px;
     }
-    .plan-limit strong { color: var(--text); }
-    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-    .feature-item {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 0.88rem; color: var(--text-2); line-height: 1.4;
+    .price-amount {
+      font-size: 3.4rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
     }
-    .feat-check { color: var(--success); flex-shrink: 0; font-weight: 700; }
-    .feat-cross { color: var(--text-3); flex-shrink: 0; }
-    .feat-lock  { color: var(--text-3); flex-shrink: 0; font-size: 0.75rem; }
+    .plan-cycle {
+      font-size: 0.85rem;
+      color: var(--text-2);
+      margin-bottom: 24px;
+    }
 
-    .plan-cta {
-      width: 100%; padding: 14px;
-      border-radius: var(--radius-sm);
-      font-weight: 700; font-size: 0.95rem;
-      cursor: pointer; border: none;
-      transition: all var(--transition);
+    /* ── Feature list ──────────────────────── */
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      margin-bottom: 28px;
     }
-    .plan-cta.primary { background: var(--accent); color: white; }
-    .plan-cta.primary:hover { background: #7c74ff; transform: translateY(-1px); }
-    .plan-cta.current { background: var(--bg3); color: var(--text-3); cursor: default; border: 1px solid var(--border); }
-    .plan-cta.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-    .plan-cta.ghost:hover { background: rgba(108,99,255,0.08); }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    .fi-icon {
+      flex-shrink: 0;
+      font-style: normal;
+      font-size: 0.85rem;
+      margin-top: 1px;
+    }
+    .fi-yes { color: var(--green); }
+    .fi-no  { color: var(--text-dim); }
+    .fi-text-no { color: var(--text-dim); }
+    .fi-text-yes { color: var(--text); }
+
+    /* ── CTA button ────────────────────────── */
+    .plan-cta {
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+      letter-spacing: -0.01em;
+    }
+    .cta-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+    .cta-primary:hover { background: #4a7de8; transform: translateY(-1px); }
+    .cta-ghost {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--border-hi);
+    }
+    .cta-ghost:hover { border-color: var(--text-2); color: var(--text); }
+    .cta-current {
+      background: var(--card-hi);
+      color: var(--text-dim);
+      cursor: default;
+      border: 1px solid var(--border);
+    }
     .plan-cta:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-    .faq { max-width: 640px; margin: 72px auto 0; }
-    .faq-title { font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 32px; }
-    .faq-item { border-bottom: 1px solid var(--border); padding: 20px 0; }
-    .faq-q { font-weight: 600; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-    .faq-a { color: var(--text-2); font-size: 0.92rem; line-height: 1.7; }
+    /* ── FAQ ──────────────────────────────── */
+    .faq {
+      max-width: 620px;
+      margin: 72px auto 0;
+    }
+    .faq-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 28px;
+      letter-spacing: -0.02em;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+    }
+    .faq-q {
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text);
+      user-select: none;
+    }
+    .faq-q:hover { color: #fff; }
+    .faq-icon { color: var(--text-dim); font-size: 1.1rem; }
+    .faq-a {
+      color: var(--text-2);
+      font-size: 0.88rem;
+      line-height: 1.7;
+      margin-top: 10px;
+      display: none;
+    }
+    .faq-item.open .faq-a { display: block; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+    .faq-icon { transition: transform 0.2s; }
 
+    /* ── Success toast ────────────────────── */
     .success-banner {
-      position: fixed; top: 90px; left: 50%; transform: translateX(-50%);
-      background: var(--bg2); border: 1px solid rgba(67,232,160,0.4);
-      border-radius: var(--radius); padding: 16px 28px;
-      font-weight: 600; color: var(--success);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      display: none; z-index: 9999;
-      animation: slideUp 0.4s ease;
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(30,50,38,0.95);
+      border: 1px solid rgba(61,220,132,0.35);
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--green);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      display: none;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
     }
   </style>
 </head>
 <body>
 
-<nav class="nav">
-  <div class="nav-logo">
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="6" fill="var(--accent)"/><path d="M6 16L11 6L16 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 13h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-    Placement<span style="color:var(--accent)">Coach</span>
-  </div>
+<nav>
+  <a href="/dashboard.html" class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <rect width="22" height="22" rx="6" fill="#5b8cf8"/>
+      <path d="M6 16L11 6L16 16" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 13h6" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    PlacementCoach
+  </a>
   <div class="nav-links">
     <a href="/dashboard.html" class="nav-link">Dashboard</a>
     <a href="/opportunities.html" class="nav-link">Opportunities</a>
-    <span id="current-plan-badge" style="font-size:0.82rem;color:var(--text-3)"></span>
+    <a href="/pricing.html" class="nav-link active">Pricing</a>
+    <span id="current-plan-badge" style="display:none"></span>
   </div>
 </nav>
 
 <div class="success-banner" id="success-banner">
-  Payment successful! Your plan is now active.
+  ✓ Payment successful — your plan is now active!
 </div>
 
 <div class="pricing-page">
   <div class="pricing-header">
     <h1 class="pricing-title">Simple, honest pricing</h1>
     <p class="pricing-sub">Start free. Upgrade only when you need more. Cancel anytime.</p>
-    <div id="current-usage" style="margin-top:16px;font-size:0.88rem;color:var(--text-2)"></div>
+    <div id="current-usage"></div>
   </div>
 
   <div class="plans-grid" id="plans-grid">
-    <!-- Rendered by JS -->
+    <!-- Skeleton while loading -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);height:420px;animation:pulse 1.4s ease infinite"></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);height:420px;animation:pulse 1.4s ease infinite;animation-delay:0.15s"></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);height:420px;animation:pulse 1.4s ease infinite;animation-delay:0.3s"></div>
   </div>
 
-  <div class="faq">
+  <div class="faq" id="faq">
     <div class="faq-title">Common questions</div>
     <div class="faq-item">
-      <div class="faq-q">Does the free plan really work? <span>+</span></div>
-      <div class="faq-a">Yes. 3 analyses/month includes full ATS score, placement probability, and 6-week action plan. No credit card needed.</div>
+      <div class="faq-q">Does the free plan actually work well? <span class="faq-icon">+</span></div>
+      <div class="faq-a">Yes. 3 analyses/month includes full ATS resume score, placement probability, and 6-week personalised action plan. No credit card required.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q">When do my analyses reset? <span>+</span></div>
-      <div class="faq-a">Your usage resets 30 days from your registration date (or last payment for paid plans). You can see the exact date on your dashboard.</div>
+      <div class="faq-q">When do my analyses reset? <span class="faq-icon">+</span></div>
+      <div class="faq-a">Your usage resets 30 days from your registration date (or last payment for paid plans). The exact reset date is shown on your dashboard.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q">What payment methods are accepted? <span>+</span></div>
-      <div class="faq-a">UPI (PhonePe, GPay, Paytm), debit/credit cards, and net banking via Razorpay. All payments are in ₹ INR.</div>
+      <div class="faq-q">What payment methods are accepted? <span class="faq-icon">+</span></div>
+      <div class="faq-a">UPI (PhonePe, Google Pay, Paytm), debit/credit cards, and net banking — via Razorpay. All payments are in ₹ INR.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q">Can I cancel anytime? <span>+</span></div>
-      <div class="faq-a">Yes. Cancelling stops renewal. You keep access until the end of your paid period, then automatically downgrade to Free.</div>
+      <div class="faq-q">Can I cancel anytime? <span class="faq-icon">+</span></div>
+      <div class="faq-a">Yes. Cancelling stops renewal. You keep Pro/Basic access until the period ends, then automatically drop to Free.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q">What if the payment fails? <span>+</span></div>
-      <div class="faq-a">Nothing is charged until payment succeeds. If your bank deducted money but the plan didn't activate, email support and we'll fix it within 4 hours.</div>
+      <div class="faq-q">What if I get charged but my plan doesn't activate? <span class="faq-icon">+</span></div>
+      <div class="faq-a">Our system verifies every payment via Razorpay and a fallback webhook. If something goes wrong, email support and we'll resolve it within 4 hours.</div>
     </div>
   </div>
 </div>
 
-<div id="toast-container"></div>
+<style>
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.8; }
+}
+</style>
 
 <script type="module">
-  import { api, getUser, removeToken, isLoggedIn, getToken } from '/js/api.js';
-  import { showToast } from '/js/utils.js';
+import { api, getUser, isLoggedIn, getToken } from '/js/api.js';
 
-  const API_BASE = window.location.hostname === 'localhost'
-    ? 'http://localhost:8000'
-    : 'https://placementcoach-api.onrender.com';
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
+  : 'https://placementcoach-api.onrender.com';
 
-  const user = getUser();
-  let currentPlanId = 'free';
+let currentPlanId = 'free';
 
-  // ── Load current plan ────────────────────────────────────────────────────
-  async function loadCurrentPlan() {
-    if (!isLoggedIn()) return;
-    try {
-      const usage = await api.getUsageStatus?.() || await fetch(`${API_BASE}/billing/usage`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      }).then(r => r.json());
-
-      currentPlanId = usage.plan_id;
-      document.getElementById('current-plan-badge').textContent = `Current: ${usage.plan_name}`;
-      document.getElementById('current-usage').textContent =
-        usage.analyses_limit === -1
-          ? `Unlimited analyses · ${usage.days_remaining} days remaining`
-          : `${usage.analyses_used}/${usage.analyses_limit} analyses used · Resets in ${usage.days_remaining} days`;
-    } catch (e) { }
-  }
-
-  // ── Render plans ──────────────────────────────────────────────────────────
-  async function renderPlans() {
-    const resp = await fetch(`${API_BASE}/billing/plans`);
-    const { plans } = await resp.json();
-
-    const grid = document.getElementById('plans-grid');
-    grid.innerHTML = '';
-
-    const FEATURES = {
-      free:  [
-        ['ATS resume score + feedback', true],
-        ['Placement probability range', true],
-        ['6-week personalised action plan', true],
-        ['Live job & internship feed', false],
-        ['Career path analysis', false],
-        ['Analysis history', false],
-        ['Score diff on re-analysis', false],
-        ['Mock interview prep', false],
-      ],
-      basic: [
-        ['Everything in Free', true],
-        ['15 analyses per month', true],
-        ['Live job & internship feed', true],
-        ['Career path + alternatives', true],
-        ['Co-curricular insights', true],
-        ['30-day analysis history', true],
-        ['Score diff on re-analysis', true],
-        ['Mock interview prep', false],
-      ],
-      pro: [
-        ['Everything in Basic', true],
-        ['Unlimited analyses', true],
-        ['Mock interview prep (AI)', true],
-        ['LinkedIn profile optimizer', true],
-        ['Company-specific prep packs', true],
-        ['Full history (all time)', true],
-        ['Priority support', true],
-        ['Early access to features', true],
-      ],
-    };
-
-    plans.forEach(plan => {
-      const isCurrent = plan.id === currentPlanId;
-      const isFeatured = plan.id === 'basic';
-      const features = FEATURES[plan.id] || [];
-
-      let ctaLabel, ctaClass, ctaAction;
-      if (isCurrent) {
-        ctaLabel = 'Current plan';
-        ctaClass = 'current';
-        ctaAction = '';
-      } else if (plan.id === 'free') {
-        ctaLabel = currentPlanId !== 'free' ? 'Cancel to downgrade' : 'Get started free';
-        ctaClass = 'ghost';
-        ctaAction = currentPlanId !== 'free' ? `cancelPlan()` : `window.location='/login.html?tab=register'`;
-      } else {
-        ctaLabel = currentPlanId === 'free' ? `Upgrade — ₹${plan.price_inr}/mo` : `Switch to ${plan.name}`;
-        ctaClass = 'primary';
-        ctaAction = `startCheckout('${plan.id}', ${plan.price_inr})`;
-      }
-
-      const featuresHtml = features.map(([label, included]) => `
-        <li class="feature-item">
-          <span class="${included ? 'feat-check' : 'feat-cross'}">${included ? '✓' : '✗'}</span>
-          <span style="${included ? '' : 'opacity:0.5'}">${label}</span>
-        </li>`).join('');
-
-      const limitText = plan.analyses_per_month === -1
-        ? '<strong>Unlimited</strong> analyses/month'
-        : `<strong>${plan.analyses_per_month}</strong> analyses/month`;
-
-      grid.innerHTML += `
-        <div class="plan-card ${isFeatured ? 'featured' : ''}">
-          ${isFeatured ? '<div class="popular-badge">Most popular</div>' : ''}
-          <div class="plan-name">${plan.name}</div>
-          <div class="plan-price">
-            <span class="plan-currency">₹</span>
-            <span class="plan-amount">${plan.price_inr}</span>
-          </div>
-          <div class="plan-cycle">${plan.price_inr === 0 ? 'free forever' : 'per month'}</div>
-          <div class="plan-limit">${limitText}</div>
-          <ul class="feature-list">${featuresHtml}</ul>
-          <button class="plan-cta ${ctaClass}"
-            ${isCurrent ? 'disabled' : ''}
-            onclick="${ctaAction}">${ctaLabel}</button>
-        </div>`;
+// ── Fetch + display current plan ───────────────────────────────
+async function loadCurrentPlan() {
+  if (!isLoggedIn()) return;
+  try {
+    const res = await fetch(`${API_BASE}/billing/usage`, {
+      headers: { Authorization: `Bearer ${getToken()}` }
     });
+    if (!res.ok) return;
+    const usage = await res.json();
+    currentPlanId = usage.plan_id;
+
+    const badge = document.getElementById('current-plan-badge');
+    badge.textContent = `Current: ${usage.plan_name}`;
+    badge.style.display = 'inline';
+
+    document.getElementById('current-usage').textContent =
+      usage.analyses_limit === -1
+        ? `Unlimited analyses · ${usage.days_remaining} days remaining in period`
+        : `${usage.analyses_used} / ${usage.analyses_limit} analyses used this month · resets in ${usage.days_remaining} days`;
+  } catch(e) { /* not logged in */ }
+}
+
+// ── Feature definitions (mirrors screenshot exactly) ───────────
+const FEATURES = {
+  free: [
+    ['3 analyses / month',      true],
+    ['ATS score + feedback',    true],
+    ['Placement probability',   true],
+    ['Basic action plan',       true],
+    ['Job opportunities',       false],
+    ['Career path analysis',    false],
+    ['Analysis history',        false],
+    ['Re-analysis diff view',   false],
+  ],
+  basic: [
+    ['15 analyses / month',         true],
+    ['Everything in Free',          true],
+    ['Live job & internship feed',  true],
+    ['Career path + alternatives',  true],
+    ['Co-curricular insights',      true],
+    ['Analysis history (30 days)',  true],
+    ['Score diff on re-analysis',   true],
+    ['Mock interview prep',         false],
+  ],
+  pro: [
+    ['Unlimited analyses',         true],
+    ['Everything in Basic',        true],
+    ['Mock interview prep (AI)',   true],
+    ['LinkedIn optimizer',         true],
+    ['Company-specific prep',      true],
+    ['Full history (all time)',    true],
+    ['Priority support',           true],
+    ['Early access to features',   true],
+  ],
+};
+
+const BADGES = {
+  free:  { label: 'FREE',         cls: 'badge-free' },
+  basic: { label: 'MOST POPULAR', cls: 'badge-pop'  },
+  pro:   { label: 'PRO',          cls: 'badge-pro'  },
+};
+
+// ── Render plans ───────────────────────────────────────────────
+async function renderPlans() {
+  let plans;
+  try {
+    const res = await fetch(`${API_BASE}/billing/plans`);
+    const data = await res.json();
+    plans = data.plans;
+  } catch(e) {
+    document.getElementById('plans-grid').innerHTML =
+      `<p style="color:var(--text-2);grid-column:1/-1;text-align:center;padding:40px">Could not load plans. Refresh to try again.</p>`;
+    return;
   }
 
-  // ── Razorpay checkout ─────────────────────────────────────────────────────
-  window.startCheckout = async (planId, priceInr) => {
-    if (!isLoggedIn()) {
-      window.location.href = `/login.html?tab=register&redirect=pricing`;
+  const grid = document.getElementById('plans-grid');
+  grid.innerHTML = '';
+
+  plans.forEach(plan => {
+    const isCurrent  = plan.id === currentPlanId;
+    const isFeatured = plan.id === 'basic';
+    const features   = FEATURES[plan.id] || [];
+    const badge      = BADGES[plan.id];
+
+    let ctaLabel, ctaClass, ctaOnClick;
+    if (isCurrent) {
+      ctaLabel   = 'Current plan';
+      ctaClass   = 'cta-current';
+      ctaOnClick = '';
+    } else if (plan.id === 'free') {
+      if (isLoggedIn() && currentPlanId !== 'free') {
+        ctaLabel   = 'Cancel to downgrade';
+        ctaClass   = 'cta-ghost';
+        ctaOnClick = `window.cancelPlan()`;
+      } else {
+        ctaLabel   = 'Get started — it\'s free';
+        ctaClass   = 'cta-ghost';
+        ctaOnClick = `window.location='/login.html'`;
+      }
+    } else {
+      ctaLabel   = `Upgrade to ${plan.name} — ₹${plan.price_inr}/mo`;
+      ctaClass   = 'cta-primary';
+      ctaOnClick = `window.startCheckout('${plan.id}', ${plan.price_inr})`;
+    }
+
+    const featuresHtml = features.map(([label, yes]) => `
+      <li class="feature-item">
+        <i class="fi-icon ${yes ? 'fi-yes' : 'fi-no'}">${yes ? '✓' : '✗'}</i>
+        <span class="${yes ? 'fi-text-yes' : 'fi-text-no'}">${label}</span>
+      </li>`).join('');
+
+    const card = document.createElement('div');
+    card.className = `plan-card${isFeatured ? ' featured' : ''}`;
+    card.innerHTML = `
+      <div class="plan-badge ${badge.cls}">
+        <span class="badge-dot"></span>${badge.label}
+      </div>
+      <div class="plan-name">${plan.name}</div>
+      <div class="plan-price">
+        <span class="price-symbol">₹</span>
+        <span class="price-amount">${plan.price_inr}</span>
+      </div>
+      <div class="plan-cycle">${plan.price_inr === 0 ? 'forever' : 'per month'}</div>
+      <ul class="feature-list">${featuresHtml}</ul>
+      <button class="plan-cta ${ctaClass}"
+        ${isCurrent ? 'disabled' : ''}
+        onclick="${ctaOnClick}">${ctaLabel}</button>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── Razorpay checkout ──────────────────────────────────────────
+window.startCheckout = async (planId, priceInr) => {
+  if (!isLoggedIn()) {
+    window.location.href = '/login.html?redirect=pricing';
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/billing/create-order`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body:    JSON.stringify({ plan_id: planId }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.detail || 'Could not create order. Try again.');
       return;
     }
+    const order = await res.json();
+    const user  = getUser() || {};
 
-    try {
-      const orderResp = await fetch(`${API_BASE}/billing/create-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ plan_id: planId }),
-      });
-
-      if (!orderResp.ok) {
-        const err = await orderResp.json();
-        showToast(err.detail || 'Could not create order', 'error');
-        return;
-      }
-
-      const order = await orderResp.json();
-      const u = getUser();
-
-      const rzp = new Razorpay({
-        key:         order.key_id,
-        amount:      order.amount,
-        currency:    order.currency,
-        name:        'PlacementCoach',
-        description: `${order.plan_name} Plan — 1 Month`,
-        order_id:    order.razorpay_order_id,
-        prefill: {
-          name:  u?.full_name || '',
-          email: u?.email    || '',
-        },
-        theme: { color: '#6c63ff' },
-        modal: {
-          ondismiss: () => showToast('Payment cancelled', 'info'),
-        },
-        handler: async (response) => {
-          // User paid — verify with backend
-          await verifyPayment(response, planId);
-        },
-      });
-
-      rzp.open();
-
-    } catch (err) {
-      showToast('Something went wrong. Please try again.', 'error');
-      console.error(err);
-    }
-  };
-
-  async function verifyPayment(razorpayResponse, planId) {
-    try {
-      const verifyResp = await fetch(`${API_BASE}/billing/verify-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({
-          razorpay_order_id:   razorpayResponse.razorpay_order_id,
-          razorpay_payment_id: razorpayResponse.razorpay_payment_id,
-          razorpay_signature:  razorpayResponse.razorpay_signature,
-          plan_id:             planId,
-        }),
-      });
-
-      const result = await verifyResp.json();
-
-      if (result.success) {
-        document.getElementById('success-banner').style.display = 'block';
-        setTimeout(() => {
-          document.getElementById('success-banner').style.display = 'none';
-        }, 5000);
-        // Reload to show updated plan state
-        currentPlanId = planId;
-        await renderPlans();
-        await loadCurrentPlan();
-      } else {
-        showToast('Payment verification failed. Contact support if charged.', 'error');
-      }
-    } catch (err) {
-      showToast('Verification error. Contact support.', 'error');
-    }
+    const rzp = new Razorpay({
+      key:         order.key_id,
+      amount:      order.amount,
+      currency:    order.currency,
+      name:        'PlacementCoach',
+      description: `${order.plan_name} Plan · 1 Month`,
+      order_id:    order.razorpay_order_id,
+      prefill:     { name: user.full_name || '', email: user.email || '' },
+      theme:       { color: '#5b8cf8' },
+      modal:       { ondismiss: () => {} },
+      handler:     async (resp) => { await verifyPayment(resp, planId); },
+    });
+    rzp.open();
+  } catch(err) {
+    alert('Something went wrong. Please try again.');
+    console.error(err);
   }
+};
 
-  window.cancelPlan = async () => {
-    if (!confirm('Cancel subscription? You keep access until period end, then downgrade to Free.')) return;
-    try {
-      await fetch(`${API_BASE}/billing/cancel`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      showToast('Subscription cancelled. Downgrading to Free at period end.', 'success');
-      currentPlanId = 'free';
+async function verifyPayment(razResp, planId) {
+  try {
+    const res = await fetch(`${API_BASE}/billing/verify-payment`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body:    JSON.stringify({
+        razorpay_order_id:   razResp.razorpay_order_id,
+        razorpay_payment_id: razResp.razorpay_payment_id,
+        razorpay_signature:  razResp.razorpay_signature,
+        plan_id:             planId,
+      }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      const banner = document.getElementById('success-banner');
+      banner.style.display = 'block';
+      setTimeout(() => banner.style.display = 'none', 5000);
+      currentPlanId = planId;
       await renderPlans();
-    } catch (e) {
-      showToast('Could not cancel. Try again.', 'error');
+      await loadCurrentPlan();
+    } else {
+      alert('Payment verification failed. Contact support if you were charged.');
     }
-  };
+  } catch(err) {
+    alert('Verification error. Contact support.');
+  }
+}
 
-  await loadCurrentPlan();
-  await renderPlans();
+window.cancelPlan = async () => {
+  if (!confirm('Cancel your subscription? You keep access until the period ends, then drop to Free.')) return;
+  try {
+    await fetch(`${API_BASE}/billing/cancel`, {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    currentPlanId = 'free';
+    await renderPlans();
+    await loadCurrentPlan();
+  } catch(e) {
+    alert('Could not cancel. Please try again.');
+  }
+};
+
+// ── FAQ accordion ──────────────────────────────────────────────
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => q.parentElement.classList.toggle('open'));
+});
+
+// ── Init ───────────────────────────────────────────────────────
+await loadCurrentPlan();
+await renderPlans();
 </script>
 </body>
 </html>
