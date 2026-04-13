@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DocuMind — PlacementCoach</title>
+  <meta name="description" content="AI-powered document intelligence. Upload your resume and ask anything — powered by reasoning-based retrieval."/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <style>
+    /* ── Chat Page Layout ─────────────────────────────────── */
+    .chat-page {
+      display: flex;
+      height: 100vh;
+      padding-top: 64px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────── */
+    .chat-sidebar {
+      width: 300px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .sidebar-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      letter-spacing: 0.04em;
+    }
+    .upload-zone {
+      margin: 16px 20px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: rgba(232,255,90,0.03);
+    }
+    .upload-zone.dragging {
+      border-color: var(--accent);
+      background: rgba(232,255,90,0.06);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+    .upload-icon {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+    .upload-text {
+      font-size: 12px;
+      color: var(--text-3);
+      line-height: 1.6;
+    }
+    .upload-text strong {
+      color: var(--accent);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .upload-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .upload-progress {
+      margin: 0 20px 16px;
+      display: none;
+    }
+    .upload-progress.active { display: block; }
+    .progress-bar {
+      height: 3px;
+      background: var(--bg3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+    .progress-text {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 6px;
+    }
+
+    /* ── Document List ────────────────────────────────────── */
+    .doc-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
+      border: 1px solid transparent;
+    }
+    .doc-item:hover { background: var(--bg3); }
+    .doc-item.active {
+      background: rgba(232,255,90,0.05);
+      border-color: rgba(232,255,90,0.15);
+    }
+    .doc-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--bg3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .doc-item.active .doc-icon {
+      background: rgba(232,255,90,0.12);
+    }
+    .doc-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .doc-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .doc-info {
+      font-size: 10px;
+      color: var(--text-3);
+      display: flex;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .doc-delete {
+      opacity: 0;
+      padding: 4px;
+      color: var(--text-3);
+      transition: all var(--transition);
+      border-radius: 3px;
+      background: none;
+    }
+    .doc-item:hover .doc-delete { opacity: 0.6; }
+    .doc-delete:hover { opacity: 1 !important; color: var(--danger); background: rgba(255,69,69,0.1); }
+
+    /* ── Chat Main ────────────────────────────────────────── */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .chat-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg2);
+    }
+    .chat-doc-name {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .chat-doc-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Messages Area ────────────────────────────────────── */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .chat-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .chat-empty-icon {
+      font-size: 3rem;
+      opacity: 0.4;
+    }
+    .chat-empty-title {
+      font-family: var(--font-head);
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .chat-empty-text {
+      font-size: 13px;
+      color: var(--text-3);
+      max-width: 400px;
+      line-height: 1.7;
+    }
+    .quick-questions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .quick-q {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--text-3);
+      background: var(--bg2);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .quick-q:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(232,255,90,0.05);
+    }
+
+    /* ── Message bubbles ──────────────────────────────────── */
+    .msg {
+      display: flex;
+      gap: 12px;
+      animation: fadeIn 0.3s ease forwards;
+    }
+    .msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .msg-user .msg-avatar {
+      background: rgba(90,173,255,0.15);
+      color: var(--accent-3);
+    }
+    .msg-ai .msg-avatar {
+      background: rgba(232,255,90,0.12);
+      color: var(--accent);
+    }
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-sender {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-3);
+      margin-bottom: 6px;
+    }
+    .msg-content {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    .msg-content p { margin-bottom: 10px; }
+    .msg-content strong { color: var(--accent); font-weight: 600; }
+    .msg-content ul, .msg-content ol {
+      padding-left: 18px;
+      margin: 8px 0;
+    }
+    .msg-content li { margin-bottom: 4px; }
+    .msg-content code {
+      background: var(--bg3);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    /* ── Reasoning trace ──────────────────────────────────── */
+    .msg-meta {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 10px;
+      color: var(--text-3);
+      letter-spacing: 0.04em;
+    }
+    .meta-chip.confidence .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .meta-chip.confidence .dot.high { background: var(--success); }
+    .meta-chip.confidence .dot.mid  { background: var(--warning); }
+    .meta-chip.confidence .dot.low  { background: var(--danger); }
+
+    .reasoning-toggle {
+      font-size: 11px;
+      color: var(--accent);
+      cursor: pointer;
+      background: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      opacity: 0.8;
+      transition: opacity var(--transition);
+    }
+    .reasoning-toggle:hover { opacity: 1; }
+
+    .reasoning-steps {
+      display: none;
+      margin-top: 10px;
+      padding: 12px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      border-left: 2px solid var(--accent);
+    }
+    .reasoning-steps.open { display: block; }
+    .reasoning-step {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 11px;
+    }
+    .reasoning-step:last-child { border-bottom: none; }
+    .step-badge {
+      padding: 2px 8px;
+      border-radius: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+      height: fit-content;
+    }
+    .step-badge.explore  { background: rgba(90,173,255,0.12); color: var(--accent-3); }
+    .step-badge.collect  { background: rgba(232,255,90,0.12); color: var(--accent); }
+    .step-badge.stop     { background: rgba(255,69,69,0.1);   color: var(--danger); }
+    .step-reason { color: var(--text-3); line-height: 1.5; }
+
+    /* ── Typing indicator ────────────────────────────────── */
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 8px 0;
+    }
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.32s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.5); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Input Area ───────────────────────────────────────── */
+    .chat-input-area {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .chat-input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .chat-input {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      color: var(--text);
+      font-size: 13px;
+      resize: none;
+      min-height: 48px;
+      max-height: 120px;
+      line-height: 1.5;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .chat-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+    .chat-input::placeholder { color: var(--text-3); }
+    .chat-send {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      color: #0b0c0e;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+    .chat-send:hover {
+      background: #f0ff80;
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .chat-send:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .chat-hint {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 8px;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .chat-sidebar {
+        position: fixed;
+        left: -300px;
+        top: 64px;
+        bottom: 0;
+        z-index: 50;
+        transition: left 0.3s ease;
+      }
+      .chat-sidebar.open { left: 0; }
+      .sidebar-toggle {
+        display: flex !important;
+      }
+    }
+    .sidebar-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 49;
+    }
+    .sidebar-overlay.active { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────────── -->
+<nav class="nav" id="main-nav">
+  <a href="/" class="nav-logo">⚡ Placement<span>Coach</span></a>
+  <div class="nav-links">
+    <a href="/dashboard.html" class="nav-link">Dashboard</a>
+    <a href="/opportunities.html" class="nav-link">Opportunities</a>
+    <a href="/chat.html" class="nav-link" style="color:var(--accent)">DocuMind</a>
+    <button class="btn btn-ghost" id="btn-logout">Log Out</button>
+  </div>
+</nav>
+
+<div class="chat-page">
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <aside class="chat-sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">📄 Documents</div>
+      <div class="sidebar-sub">Upload PDFs and chat with them</div>
+    </div>
+
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" accept=".pdf" class="upload-input" id="file-input"/>
+      <div class="upload-icon">📤</div>
+      <div class="upload-text">
+        <strong>Upload PDF</strong>
+        Drop file here or click to browse
+      </div>
+    </div>
+
+    <div class="upload-progress" id="upload-progress">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-text" id="progress-text">Indexing document...</div>
+    </div>
+
+    <div class="doc-list" id="doc-list">
+      <!-- Documents populated by JS -->
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ── Main Chat ───────────────────────────────────────── -->
+  <main class="chat-main">
+    <div class="chat-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+        <div>
+          <div class="chat-doc-name" id="chat-doc-name">Select a document</div>
+          <div class="chat-doc-badge" id="chat-doc-badge"></div>
+        </div>
+      </div>
+      <div id="tree-info" style="display:flex;gap:8px"></div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-empty" id="chat-empty">
+        <div class="chat-empty-icon">🧠</div>
+        <div class="chat-empty-title">DocuMind — AI Document Intelligence</div>
+        <div class="chat-empty-text">
+          Upload a resume or document, then ask anything.<br/>
+          Powered by <strong>reasoning-based retrieval</strong> — no keyword matching, no hallucinations.
+        </div>
+        <div class="quick-questions" id="quick-questions" style="display:none">
+          <button class="quick-q" data-q="Summarize this document in 3 bullet points.">📋 Summarize</button>
+          <button class="quick-q" data-q="What are the key skills mentioned?">🎯 Key Skills</button>
+          <button class="quick-q" data-q="List all work experience with dates and roles.">💼 Experience</button>
+          <button class="quick-q" data-q="What projects were built? Give details on each.">🔧 Projects</button>
+          <button class="quick-q" data-q="What certifications or achievements are listed?">🏆 Achievements</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <textarea class="chat-input" id="chat-input"
+          placeholder="Ask anything about your document..."
+          rows="1" disabled></textarea>
+        <button class="chat-send" id="chat-send" disabled>→</button>
+      </div>
+      <div class="chat-hint">Enter to send · Shift+Enter for new line · Reasoning-based AI</div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { api, getToken, isLoggedIn, removeToken } from '/js/api.js';
+
+// ── Auth guard ────────────────────
+if (!isLoggedIn()) {
+  window.location.href = '/login.html';
+}
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+  removeToken();
+  window.location.href = '/login.html';
+});
+
+// ── State ─────────────────────────
+let documents = [];
+let activeDocId = null;
+let isQuerying = false;
+
+const chatMessages = document.getElementById('chat-messages');
+const chatEmpty = document.getElementById('chat-empty');
+const chatInput = document.getElementById('chat-input');
+const chatSend = document.getElementById('chat-send');
+const docList = document.getElementById('doc-list');
+const fileInput = document.getElementById('file-input');
+const uploadZone = document.getElementById('upload-zone');
+const uploadProgress = document.getElementById('upload-progress');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
+const chatDocName = document.getElementById('chat-doc-name');
+const quickQs = document.getElementById('quick-questions');
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const treeInfo = document.getElementById('tree-info');
+
+// ── Mobile sidebar toggle ─────────
+sidebarToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('open');
+  sidebarOverlay.classList.toggle('active');
+});
+sidebarOverlay.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('active');
+});
+
+// ── Upload drag/drop ──────────────
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('dragging');
+});
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.classList.remove('dragging');
+});
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') handleUpload(file);
+});
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) handleUpload(file);
+  e.target.value = '';
+});
+
+// ── Upload handler ────────────────
+async function handleUpload(file) {
+  uploadProgress.classList.add('active');
+  progressFill.style.width = '10%';
+  progressText.textContent = `Parsing ${file.name}...`;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  // Simulate progress
+  let pct = 10;
+  const interval = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 8, 85);
+    progressFill.style.width = pct + '%';
+    if (pct > 30) progressText.textContent = 'Building document tree...';
+    if (pct > 60) progressText.textContent = 'Generating summaries...';
+  }, 500);
+
+  try {
+    const res = await api.pageIndex.upload(formData);
+    clearInterval(interval);
+    progressFill.style.width = '100%';
+    progressText.textContent = `✓ ${res.total_nodes} sections indexed`;
+    toast(`Document indexed: ${res.total_nodes} nodes in ${res.index_time_seconds.toFixed(1)}s`, 'success');
+
+    setTimeout(() => {
+      uploadProgress.classList.remove('active');
+      progressFill.style.width = '0%';
+    }, 2000);
+
+    await loadDocuments();
+    selectDocument(res.document_id);
+  } catch (err) {
+    clearInterval(interval);
+    progressFill.style.width = '0%';
+    uploadProgress.classList.remove('active');
+    toast(err.message || 'Upload failed', 'error');
+  }
+}
+
+// ── Load documents ────────────────
+async function loadDocuments() {
+  try {
+    documents = await api.pageIndex.getDocuments();
+    renderDocList();
+  } catch (err) {
+    console.error('Failed to load documents', err);
+  }
+}
+
+function renderDocList() {
+  if (!documents.length) {
+    docList.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-3);font-size:12px">No documents yet.<br/>Upload a PDF above.</div>`;
+    return;
+  }
+  docList.innerHTML = documents.map(doc => `
+    <div class="doc-item ${doc.document_id === activeDocId ? 'active' : ''}" data-id="${doc.document_id}">
+      <div class="doc-icon">📄</div>
+      <div class="doc-meta">
+        <div class="doc-name">${doc.filename}</div>
+        <div class="doc-info">
+          <span>${doc.total_pages} pg</span>
+          <span>${doc.total_nodes} nodes</span>
+        </div>
+      </div>
+      <button class="doc-delete" data-id="${doc.document_id}" title="Delete">✕</button>
+    </div>
+  `).join('');
+
+  docList.querySelectorAll('.doc-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.doc-delete')) return;
+      selectDocument(el.dataset.id);
+    });
+  });
+  docList.querySelectorAll('.doc-delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      if (confirm('Delete this document?')) {
+        try {
+          await api.pageIndex.delete(id);
+          toast('Document deleted', 'success');
+          if (activeDocId === id) {
+            activeDocId = null;
+            chatDocName.textContent = 'Select a document';
+            chatInput.disabled = true;
+            chatSend.disabled = true;
+            resetChat();
+          }
+          await loadDocuments();
+        } catch (err) {
+          toast('Delete failed: ' + err.message, 'error');
+        }
+      }
+    });
+  });
+}
+
+// ── Select document ───────────────
+async function selectDocument(docId) {
+  activeDocId = docId;
+  const doc = documents.find(d => d.document_id === docId);
+  chatDocName.textContent = doc ? doc.filename : 'Document';
+
+  chatInput.disabled = false;
+  chatSend.disabled = false;
+  chatInput.focus();
+
+  // Show quick questions
+  quickQs.style.display = 'flex';
+
+  // Show tree info
+  try {
+    const tree = await api.pageIndex.getTree(docId);
+    const sections = tree.tree.children?.map(c => c.title) || [];
+    treeInfo.innerHTML = sections.slice(0, 4).map(s =>
+      `<span class="meta-chip">${s}</span>`
+    ).join('') + (sections.length > 4 ? `<span class="meta-chip">+${sections.length - 4}</span>` : '');
+  } catch {
+    treeInfo.innerHTML = '';
+  }
+
+  renderDocList();
+  resetChat();
+
+  // Close mobile sidebar
+  sidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('active');
+}
+
+function resetChat() {
+  chatMessages.innerHTML = '';
+  chatMessages.appendChild(chatEmpty);
+  chatEmpty.style.display = 'flex';
+}
+
+// ── Quick questions ───────────────
+document.querySelectorAll('.quick-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const q = btn.dataset.q;
+    chatInput.value = q;
+    sendMessage();
+  });
+});
+
+// ── Send message ──────────────────
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+chatInput.addEventListener('input', autoResize);
+chatSend.addEventListener('click', sendMessage);
+
+function autoResize() {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+}
+
+async function sendMessage() {
+  const query = chatInput.value.trim();
+  if (!query || !activeDocId || isQuerying) return;
+
+  // Hide empty state
+  chatEmpty.style.display = 'none';
+
+  // Add user message
+  addMessage('user', query);
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+
+  // Show typing indicator
+  const typingEl = addTyping();
+  isQuerying = true;
+  chatInput.disabled = true;
+  chatSend.disabled = true;
+
+  try {
+    const res = await api.pageIndex.chat(activeDocId, query);
+    typingEl.remove();
+
+    addAIMessage(res);
+  } catch (err) {
+    typingEl.remove();
+    addMessage('ai', `❌ Error: ${err.message}. Please try again.`);
+  } finally {
+    isQuerying = false;
+    chatInput.disabled = false;
+    chatSend.disabled = false;
+    chatInput.focus();
+  }
+}
+
+// ── Message rendering ─────────────
+function addMessage(role, text) {
+  const el = document.createElement('div');
+  el.className = `msg msg-${role}`;
+  el.innerHTML = `
+    <div class="msg-avatar">${role === 'user' ? '👤' : '🧠'}</div>
+    <div class="msg-body">
+      <div class="msg-sender">${role === 'user' ? 'You' : 'DocuMind'}</div>
+      <div class="msg-content">${formatText(text)}</div>
+    </div>
+  `;
+  chatMessages.appendChild(el);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return el;
+}
+
+function addAIMessage(res) {
+  const conf = res.confidence || 0;
+  const confClass = conf >= 0.7 ? 'high' : conf >= 0.4 ? 'mid' : 'low';
+  const confLabel = conf >= 0.7 ? 'High' : conf >= 0.4 ? 'Medium' : 'Low';
+  const steps = res.reasoning_steps || [];
+  const sources = res.source_titles || [];
+  const latency = res.latency_ms ? `${(res.latency_ms / 1000).toFixed(1)}s` : '';
+  const method = res.retrieval_method || 'pageindex';
+
+  const stepsHtml = steps.length ? `
+    <button class="reasoning-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+      ⚡ Show reasoning trace (${steps.length} steps)
+    </button>
+    <div class="reasoning-steps">
+      ${steps.map(s => `
+        <div class="reasoning-step">
+          <span class="step-badge ${s.decision === 'collect' || s.decision === 'collect_and_continue' ? 'collect' : s.decision === 'stop' ? 'stop' : 'explore'}">${s.decision}</span>
+          <div>
+            <strong style="color:var(--text);font-size:11px">${s.node_title}</strong>
+            <div class="step-reason">${s.reasoning || ''}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
+
+  const el = document.createElement('div');
+  el.className = 'msg msg-ai';
+  el.innerHTML = `
+    <div class="msg-avatar">🧠</div>
+    <div class="msg-body">
+      <div class="msg-sender">DocuMind</div>
+      <div class="msg-content">${formatText(res.answer)}</div>
+      <div class="msg-meta">
+        <span class="meta-chip confidence"><span class="dot ${confClass}"></span>${confLabel} (${(conf * 100).toFixed(0)}%)</span>
+        ${sources.map(s => `<span class="meta-chip">📑 ${s}</span>`).join('')}
+        ${latency ? `<span class="meta-chip">⏱ ${latency}</span>` : ''}
+        <span class="meta-chip">🔍 ${method}</span>
+      </div>
+      ${stepsHtml}
+    </div>
+  `;
+  chatMessages.appendChild(el);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addTyping() {
+  const el = document.createElement('div');
+  el.className = 'msg msg-ai';
+  el.innerHTML = `
+    <div class="msg-avatar">🧠</div>
+    <div class="msg-body">
+      <div class="msg-sender">DocuMind</div>
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>
+  `;
+  chatMessages.appendChild(el);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return el;
+}
+
+function formatText(text) {
+  if (!text) return '';
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n- /g, '<br/>• ')
+    .replace(/\n(\d+)\. /g, '<br/>$1. ')
+    .replace(/\n/g, '<br/>')
+    .replace(/^(.*)$/, '<p>$1</p>');
+}
+
+// ── Toast ─────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ── Init ──────────────────────────
+loadDocuments();
+</script>
+</body>
+</html>
