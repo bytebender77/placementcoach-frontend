@@ -1,17 +1,46 @@
 // ── API base URL ────────────────────────────────────────────
-const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:8000'
-  : 'https://placementcoach-api.onrender.com';
+const API_BASE =
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:8000'
+    : 'https://placementcoach-api.onrender.com';
 
 // ── Token helpers ─────────────────────────────────────────
-export function getToken()        { return localStorage.getItem('pc_token'); }
-export function setToken(t)       { localStorage.setItem('pc_token', t); }
-export function removeToken()     { localStorage.removeItem('pc_token'); localStorage.removeItem('pc_user'); }
-export function getUser()         { return JSON.parse(localStorage.getItem('pc_user') || 'null'); }
-export function setUser(u)        { localStorage.setItem('pc_user', JSON.stringify(u)); }
+export function getToken()        { return typeof window !== 'undefined' ? localStorage.getItem('pc_token') : null; }
+export function setToken(t)       { if (typeof window !== 'undefined') localStorage.setItem('pc_token', t); }
+export function removeToken()     { 
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('pc_token'); 
+    localStorage.removeItem('pc_user'); 
+  }
+}
+export function getUser()         { 
+  return typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('pc_user') || 'null') : null; 
+}
+export function setUser(u)        { if (typeof window !== 'undefined') localStorage.setItem('pc_user', JSON.stringify(u)); }
 export function isLoggedIn()      { return !!getToken(); }
 
-// ── Core fetch wrapper ────────────────────────────────────
+// ── Core fetch wrapper with timeout & retry ───────────────
+async function fetchWithRetry(url, options, retries = 2) {
+  try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    if (retries > 0 && err.name !== 'AbortError') {
+      console.log(`Retrying... (${retries} left)`);
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw err;
+  }
+}
+
 async function request(method, path, body = null, isMultipart = false) {
   const headers = {};
   const token = getToken();
@@ -21,20 +50,25 @@ async function request(method, path, body = null, isMultipart = false) {
   const config = { method, headers };
   if (body) config.body = isMultipart ? body : JSON.stringify(body);
 
-  const res = await fetch(`${API_BASE}${path}`, config);
+  try {
+    const res = await fetchWithRetry(`${API_BASE}${path}`, config);
 
-  if (res.status === 401) {
-    removeToken();
-    window.location.href = '/login.html';
-    return;
+    if (res.status === 401) {
+      removeToken();
+      if (typeof window !== 'undefined') window.location.href = '/login.html';
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || `Request failed: ${res.status}`);
+    return data;
+  } catch (err) {
+    console.error('API Request Error:', err);
+    throw err;
   }
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.detail || `Request failed: ${res.status}`);
-  return data;
 }
 
-// ── Auth ──────────────────────────────────────────────────
+// ── Auth & Features ───────────────────────────────────────
 export const api = {
   register: (email, password, full_name) =>
     request('POST', '/auth/register', { email, password, full_name }),
@@ -65,6 +99,27 @@ export const api = {
 
   getProfile: () =>
     request('GET', '/me/profile'),
+
+  // ── PageIndex (Reasoning API) ───────────────────────────
+  pageIndex: {
+    upload: (formData) => 
+      request('POST', '/pageindex/upload', formData, true),
+    
+    chat: (document_id, query) =>
+      request('POST', '/pageindex/chat', { document_id, query }),
+    
+    multiChat: (documents, query) =>
+      request('POST', '/pageindex/chat/multi', { documents, query }),
+    
+    getDocuments: () =>
+      request('GET', '/pageindex/documents'),
+    
+    getTree: (document_id) =>
+      request('GET', `/pageindex/tree/${document_id}`),
+      
+    delete: (document_id) =>
+      request('DELETE', `/pageindex/${document_id}`),
+  },
 
   // ── V2: Opportunities ──────────────────────────────────
   findOpportunities: (analysis_id, placement_label) =>
